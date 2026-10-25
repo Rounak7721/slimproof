@@ -218,3 +218,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+
+# Local AI/dev notes - never commit
+CLAUDE.md
+CLAUDE.local.md
+.claude/settings.local.json
+notes/
+scratch/
+.env
+.env.*
+evals/runs/
+evals/.cache/
+# Editor settings and caches
+.vscode/
