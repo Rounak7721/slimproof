@@ -28,7 +28,7 @@ def count_claude_tokens(tool: types.Tool, model: str = CLAUDE_MODEL) -> int:
         from anthropic import Anthropic
         from anthropic.types import MessageParam, ToolParam
     except ImportError as e:
-        raise RuntimeError("Install the extra: pip install 'slimproof[claude]' ") from e
+        raise RuntimeError("Install the extra: pip install 'slimproof[claude]'") from e
 
     client = Anthropic()
 

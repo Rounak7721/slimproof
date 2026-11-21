@@ -1,6 +1,7 @@
 """Find and parse MCP client config files."""
 
 import json
+import os
 from pathlib import Path
 
 from mcp import StdioServerParameters
@@ -18,3 +19,16 @@ def load_servers(path: Path) -> dict[str, StdioServerParameters]:
             )
 
     return servers
+
+
+def config_paths(cwd: Path) -> list[Path]:
+    """Known Claude Code / Claude Desktop config locations that exist on this machine."""
+    home = Path.home()
+    appdata = Path(os.environ.get("APPDATA", home / "AppData/Roaming"))
+    candidates = [
+        cwd / ".mcp.json",  # Claude Code, project scope
+        home / ".claude.json",  # Claude Code, user scope
+        home / "Library/Application Support/Claude/claude_desktop_config.json",  # macOS
+        appdata / "Claude/claude_desktop_config.json",  # Windows
+    ]
+    return [p for p in candidates if p.is_file()]
