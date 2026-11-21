@@ -3,6 +3,7 @@
 import asyncio
 
 from mcp import Client, StdioServerParameters, types
+from mcp.server.mcpserver import MCPServer
 
 FILESYSTEM_SERVER = StdioServerParameters(
     command="npx",
@@ -10,7 +11,7 @@ FILESYSTEM_SERVER = StdioServerParameters(
 )
 
 
-async def list_tools(server: StdioServerParameters) -> list[types.Tool]:
+async def list_tools(server: StdioServerParameters | MCPServer) -> list[types.Tool]:
     """Start `server`, do the MCP handshake, and return all of its tools."""
     tools: list[types.Tool] = []
     async with Client(server) as client:
