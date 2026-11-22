@@ -32,12 +32,14 @@ def audit(
         typer.echo("No MCP config files found. Pass one with --config.", err=True)
         raise typer.Exit(2)
 
-    costs, errors = asyncio.run(run_audit(paths))
+    result = asyncio.run(run_audit(paths))
     if fmt == "json":
-        typer.echo(to_json(costs, errors))
+        typer.echo(to_json(result))
     else:
-        Console().print(to_table(costs))
-        for name, msg in errors.items():
+        Console().print(to_table(result.costs))
+        for name, msg in result.skipped.items():
+            typer.echo(f"{name}: skipped ({msg})", err=True)
+        for name, msg in result.errors.items():
             typer.echo(f"{name}: failed ({msg})", err=True)
-    if errors:
+    if result.errors:
         raise typer.Exit(2)

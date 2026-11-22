@@ -20,23 +20,31 @@ class ToolCost:
     tokens: int
 
 
+@dataclass(frozen=True)
+class AuditResult:
+    """Everything one audit found."""
+
+    costs: list[ToolCost]
+    errors: dict[str, str]  # server -> why auditing it failed
+    skipped: dict[str, str]  # server -> why we deliberately didn't try
+
+
 async def audit_server(name: str, server: StdioServerParameters | MCPServer) -> list[ToolCost]:
     """List `server`'s tools and estimate each tool's token cost."""
     tools = await list_tools(server)
     return [ToolCost(name, t.name, estimate_tokens(tool_text(t))) for t in tools]
 
 
-async def audit(paths: list[Path]) -> tuple[list[ToolCost], dict[str, str]]:
-    """Audit every server in `paths`. Return costs ranked high -> low, and per-server errors."""
-    costs: list[ToolCost] = []
-    errors: dict[str, str] = {}
-
+async def audit(paths: list[Path]) -> AuditResult:
+    """Audit every server in `paths`, with costs ranked high -> low."""
+    result = AuditResult(costs=[], errors={}, skipped={})
     for path in paths:
-        for name, server in load_servers(path).items():
+        servers, skipped = load_servers(path)
+        result.skipped.update(skipped)
+        for name, server in servers.items():
             try:  # ponytail: one server at a time; run concurrently if audits feel slow
-                costs.extend(await audit_server(name, server))
+                result.costs.extend(await audit_server(name, server))
             except Exception as e:
-                errors[name] = str(e)
-
-    costs.sort(key=lambda c: c.tokens, reverse=True)
-    return costs, errors
+                result.errors[name] = str(e)
+    result.costs.sort(key=lambda c: c.tokens, reverse=True)
+    return result

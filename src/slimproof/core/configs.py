@@ -7,18 +7,20 @@ from pathlib import Path
 from mcp import StdioServerParameters
 
 
-def load_servers(path: Path) -> dict[str, StdioServerParameters]:
-    """Read the stdio servers from a config file's `mcpServers` block."""
-
+def load_servers(path: Path) -> tuple[dict[str, StdioServerParameters], dict[str, str]]:
+    """Read a config's `mcpServers` block.
+    Return (stdio servers, {name: reason} for skipped ones)."""
     data = json.loads(path.read_text(encoding="utf-8"))
     servers: dict[str, StdioServerParameters] = {}
+    skipped: dict[str, str] = {}
     for name, entry in data.get("mcpServers", {}).items():
-        if "command" in entry:  # ponytail: HTTP servers skipped until client.py supports them
+        if "command" in entry:
             servers[name] = StdioServerParameters(
                 command=entry["command"], args=entry.get("args", []), env=entry.get("env")
             )
-
-    return servers
+        else:
+            skipped[name] = f"{entry.get('type', 'unknown')} servers not supported yet"
+    return servers, skipped
 
 
 def config_paths(cwd: Path) -> list[Path]:

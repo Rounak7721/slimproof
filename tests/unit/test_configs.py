@@ -14,10 +14,11 @@ def test_load_servers_reads_stdio_and_skips_http(tmp_path: Path) -> None:
     }
     config.write_text(json.dumps({"mcpServers": servers_json}), encoding="utf-8")
 
-    servers = load_servers(config)
+    servers, skipped = load_servers(config)
 
     assert list(servers) == ["fs"]
     assert servers["fs"].args == ["-y", "server-filesystem"]
+    assert skipped == {"remote": "http servers not supported yet"}
 
 
 def test_config_paths_finds_existing_files(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

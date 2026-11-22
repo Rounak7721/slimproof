@@ -29,7 +29,7 @@ async def test_audit_records_broken_server(tmp_path: Path) -> None:
     config = tmp_path / ".mcp.json"
     config.write_text(json.dumps({"mcpServers": {"broken": {"command": "slimproof-no-such-cmd"}}}))
 
-    costs, errors = await audit([config])
+    result = await audit([config])
 
-    assert costs == []
-    assert "broken" in errors
+    assert result.costs == []
+    assert "broken" in result.errors

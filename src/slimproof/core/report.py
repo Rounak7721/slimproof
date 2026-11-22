@@ -5,12 +5,12 @@ from dataclasses import asdict
 
 from rich.table import Table
 
-from slimproof.core.audit import ToolCost
+from slimproof.core.audit import AuditResult, ToolCost
 
 
-def to_json(costs: list[ToolCost], errors: dict[str, str]) -> str:
+def to_json(result: AuditResult) -> str:
     """Audit results as a JSON string, for scripts and CI."""
-    return json.dumps({"tools": [asdict(c) for c in costs], "errors": errors}, indent=2)
+    return json.dumps(asdict(result), indent=2)
 
 
 def to_table(costs: list[ToolCost]) -> Table:
