@@ -6,17 +6,30 @@ from pathlib import Path
 
 from mcp import StdioServerParameters
 
+from slimproof.core.client import HttpServer
 
-def load_servers(path: Path) -> tuple[dict[str, StdioServerParameters], dict[str, str]]:
+
+def load_servers(
+    path: Path,
+) -> tuple[dict[str, StdioServerParameters | HttpServer], dict[str, str]]:
     """Read a config's `mcpServers` block.
-    Return (stdio servers, {name: reason} for skipped ones)."""
+
+    Return (stdio and HTTP servers, {name: reason} for skipped ones).
+    """
+
     data = json.loads(path.read_text(encoding="utf-8"))
-    servers: dict[str, StdioServerParameters] = {}
+    servers: dict[str, StdioServerParameters | HttpServer] = {}
     skipped: dict[str, str] = {}
     for name, entry in data.get("mcpServers", {}).items():
         if "command" in entry:
             servers[name] = StdioServerParameters(
                 command=entry["command"], args=entry.get("args", []), env=entry.get("env")
+            )
+        elif entry.get("type") == "http":
+            # ponytail: no ${VAR:-default} syntax, and stdio args/env aren't expanded yet
+            servers[name] = HttpServer(
+                url=os.path.expandvars(entry["url"]),
+                headers={k: os.path.expandvars(v) for k, v in entry.get("headers", {}).items()},
             )
         else:
             skipped[name] = f"{entry.get('type', 'unknown')} servers not supported yet"

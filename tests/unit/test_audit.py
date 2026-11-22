@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from mcp.server.mcpserver import MCPServer
 
-from slimproof.core.audit import audit, audit_server
+from slimproof.core.audit import _error_message, audit, audit_server
 
 
 @pytest.mark.anyio
@@ -33,3 +33,8 @@ async def test_audit_records_broken_server(tmp_path: Path) -> None:
 
     assert result.costs == []
     assert "broken" in result.errors
+
+
+def test_error_message_masks_secrets() -> None:
+    msg = _error_message(ValueError("bad token sp-secret-123"), ["sp-secret-123"])
+    assert msg == "ValueError: bad token ***"
