@@ -17,7 +17,7 @@ classifiers = ["Development Status :: 1 - Planning"]
 Repository = "https://github.com/Rounak7721/slimproof"
 
 [project.scripts]
-slimproof = "slimproof:main"
+slimproof = "slimproof.cli:app"
 
 [project.optional-dependencies]
 claude = [
