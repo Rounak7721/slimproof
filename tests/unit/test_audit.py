@@ -1,7 +1,10 @@
+import json
+from pathlib import Path
+
 import pytest
 from mcp.server.mcpserver import MCPServer
 
-from slimproof.core.audit import audit_server
+from slimproof.core.audit import audit, audit_server
 
 
 @pytest.mark.anyio
@@ -19,3 +22,14 @@ async def test_audit_server_costs_each_tool() -> None:
     assert costs[0].server == "fake"
     assert costs[0].tool == "ping"
     assert costs[0].tokens > 0
+
+
+@pytest.mark.anyio
+async def test_audit_records_broken_server(tmp_path: Path) -> None:
+    config = tmp_path / ".mcp.json"
+    config.write_text(json.dumps({"mcpServers": {"broken": {"command": "slimproof-no-such-cmd"}}}))
+
+    costs, errors = await audit([config])
+
+    assert costs == []
+    assert "broken" in errors

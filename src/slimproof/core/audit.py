@@ -1,11 +1,13 @@
 """Measure how many tokens each MCP tool definition costs."""
 
 from dataclasses import dataclass
+from pathlib import Path
 
 from mcp import StdioServerParameters
 from mcp.server.mcpserver import MCPServer
 
 from slimproof.core.client import list_tools
+from slimproof.core.configs import load_servers
 from slimproof.core.tokens import estimate_tokens, tool_text
 
 
@@ -22,3 +24,19 @@ async def audit_server(name: str, server: StdioServerParameters | MCPServer) -> 
     """List `server`'s tools and estimate each tool's token cost."""
     tools = await list_tools(server)
     return [ToolCost(name, t.name, estimate_tokens(tool_text(t))) for t in tools]
+
+
+async def audit(paths: list[Path]) -> tuple[list[ToolCost], dict[str, str]]:
+    """Audit every server in `paths`. Return costs ranked high -> low, and per-server errors."""
+    costs: list[ToolCost] = []
+    errors: dict[str, str] = {}
+
+    for path in paths:
+        for name, server in load_servers(path).items():
+            try:  # ponytail: one server at a time; run concurrently if audits feel slow
+                costs.extend(await audit_server(name, server))
+            except Exception as e:
+                errors[name] = str(e)
+
+    costs.sort(key=lambda c: c.tokens, reverse=True)
+    return costs, errors
