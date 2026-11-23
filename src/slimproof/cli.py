@@ -5,12 +5,11 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 import typer
-from mcp import StdioServerParameters
 from rich.console import Console
 
 from slimproof.core.audit import AuditResult, audit_one
 from slimproof.core.audit import audit as run_audit
-from slimproof.core.client import HttpServer
+from slimproof.core.client import server_from
 from slimproof.core.configs import config_paths
 from slimproof.core.report import to_json, to_table
 
@@ -45,14 +44,11 @@ def server(
     fmt: Annotated[Literal["table", "json"], typer.Option("--format")] = "table",
 ) -> None:
     """Audit one server without a config: `server -- CMD ARGS...` or `server --url URL`."""
-    if bool(command) == bool(url):
-        typer.echo("Give either a command after -- or --url, not both.", err=True)
-        raise typer.Exit(2)
-    if url:
-        params, name = HttpServer(url), url
-    else:
-        assert command  # narrows the type for pyright
-        params, name = StdioServerParameters(command=command[0], args=command[1:]), command[0]
+    try:
+        name, params = server_from(command, url)
+    except ValueError as e:
+        typer.echo(str(e), err=True)
+        raise typer.Exit(2) from None
     _print_result(asyncio.run(audit_one(name, params)), fmt)
 
 

@@ -1,12 +1,18 @@
 """slimproof's own MCP server: tool registration only, all logic lives in slimproof.core."""
 
+import json
+from dataclasses import asdict
 from pathlib import Path
+from typing import Any
 
 from mcp import types
 from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 
-from slimproof.core.audit import audit
+from slimproof.core.audit import audit, audit_one
+from slimproof.core.client import server_from
 from slimproof.core.configs import config_paths
+from slimproof.core.guard import compare as compare_tools
 from slimproof.core.report import to_json
 
 mcp = MCPServer("slimproof")
@@ -21,3 +27,25 @@ async def audit_config(config_path: str | None = None) -> str:
     if not paths:
         return "No MCP config files found. Pass config_path."
     return to_json(await audit(paths))
+
+
+@mcp.tool(annotations=READ_ONLY)
+async def audit_server(command: list[str] | None = None, url: str | None = None) -> str:
+    """Audit one MCP server by stdio command (["npx", "-y", "pkg"])
+    or HTTP url: costs + findings.
+    """
+    try:
+        name, server = server_from(command, url)
+    except ValueError as e:
+        raise ToolError(str(e)) from e
+    return to_json(await audit_one(name, server))
+
+
+@mcp.tool(annotations=READ_ONLY)
+def compare(original: list[dict[str, Any]], slim: list[dict[str, Any]]) -> str:
+    """Check slim tool definitions against the originals:
+    token savings + lossless-guard problems.
+    """
+    before = [types.Tool.model_validate(t) for t in original]
+    after = [types.Tool.model_validate(t) for t in slim]
+    return json.dumps([asdict(c) for c in compare_tools(before, after)], indent=2)

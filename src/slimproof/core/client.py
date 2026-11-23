@@ -22,6 +22,18 @@ class HttpServer:
     headers: dict[str, str] = field(default_factory=dict)
 
 
+def server_from(
+    command: list[str] | None, url: str | None
+) -> tuple[str, StdioServerParameters | HttpServer]:
+    """Build a server from a stdio command or an HTTP url (exactly one): (display name, server)."""
+    if bool(command) == bool(url):
+        raise ValueError("Give either a stdio command or a url, not both.")
+    if url:
+        return url, HttpServer(url)
+    assert command  # narrows the type for pyright
+    return command[0], StdioServerParameters(command=command[0], args=command[1:])
+
+
 async def list_tools(
     server: StdioServerParameters | MCPServer | HttpServer,
     transport: httpx2.AsyncBaseTransport | None = None,
