@@ -1,0 +1,377 @@
+[
+  {
+    "name": "read_file",
+    "description": "Read a file's full contents as text. DEPRECATED: use read_text_file.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "File to read as text. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        },
+        "tail": {
+          "description": "Return only the last N lines.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "head": {
+          "description": "Return only the first N lines.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "read_text_file",
+    "description": "Read one file's full contents as text, whatever its extension. Handles various text encodings and gives detailed errors if the file can't be read. Use head or tail to read only the first or last N lines.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "File to read as text. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        },
+        "tail": {
+          "description": "Return only the last N lines.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "head": {
+          "description": "Return only the first N lines.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "read_media_file",
+    "description": "Read a file as a base64 content block with its MIME type: image and audio files as image/audio content, any other type as an embedded resource.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Image, audio or other file to read as base64. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "read_multiple_files",
+    "description": "Read several files at once; more efficient than one by one when analyzing or comparing files. Each content is returned with its path. A failed read doesn't stop the others.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "paths": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "File paths to read; each must be a file within allowed directories."
+        }
+      },
+      "required": [
+        "paths"
+      ]
+    }
+  },
+  {
+    "name": "write_file",
+    "description": "Create a file or completely overwrite an existing one, without warning. Handles text with proper encoding.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "File to create or overwrite; its parent directory must exist. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        },
+        "content": {
+          "type": "string",
+          "description": "Complete text the file will contain, replacing any it had."
+        }
+      },
+      "required": [
+        "path",
+        "content"
+      ]
+    }
+  },
+  {
+    "name": "append_file",
+    "description": "Append text to the end of a file, creating it if missing. Existing content is never changed or replaced.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "File to append to; created if missing. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        },
+        "content": {
+          "type": "string",
+          "description": "Text to append, exactly as given; no newline is added before or after it. End it with \\n if the next append should start on a new line."
+        }
+      },
+      "required": [
+        "path",
+        "content"
+      ]
+    }
+  },
+  {
+    "name": "edit_file",
+    "description": "Make line-based edits to a text file; returns a git-style diff. Each edit replaces the first match of oldText with newText. oldText must match exactly, except that line endings (LF or CRLF) never matter and, with no exact match, a run of whole lines matches if each line is equal ignoring leading and trailing whitespace (newText then takes the file's indentation). Whitespace inside a line must match. If any edit has no match, nothing is written and the error shows the closest numbered lines of the file to copy oldText from.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Text file to edit. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        },
+        "edits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "oldText": {
+                "type": "string",
+                "description": "Text to find; must match exactly."
+              },
+              "newText": {
+                "type": "string",
+                "description": "Replacement text."
+              }
+            },
+            "required": [
+              "oldText",
+              "newText"
+            ]
+          },
+          "description": "Replacements, applied in order, each to the result of the ones before."
+        },
+        "dryRun": {
+          "default": false,
+          "description": "Preview changes as a git-style diff.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "path",
+        "edits"
+      ]
+    }
+  },
+  {
+    "name": "create_directory",
+    "description": "Create a directory, with any missing nested parents. Succeeds silently if it already exists.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Directory to create. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "list_directory",
+    "description": "List the entries directly inside a directory, one line each, marked [FILE] or [DIR]. For sizes or sorting by size use list_directory_with_sizes; for a recursive view use directory_tree.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Directory to list. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "list_directory_with_sizes",
+    "description": "List the entries directly inside a directory with each file's size, marked [FILE] or [DIR], one line each, then totals. Use when sizes matter, such as finding the largest files; for names only, list_directory returns less text.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Directory to list. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        },
+        "sortBy": {
+          "default": "name",
+          "description": "Sort order; size sorts largest first.",
+          "type": "string",
+          "enum": [
+            "name",
+            "size"
+          ]
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "directory_tree",
+    "description": "Get a recursive JSON tree of files and directories, indented 2 spaces. Each entry has name, type (file/directory) and, for directories, a children array (may be empty); files have none. Directories at the depth limit are not read and have no children array.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Root directory of the tree. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        },
+        "excludePatterns": {
+          "default": [],
+          "description": "Patterns of entries to leave out, with their contents, matched against each entry's path relative to path. Without '*', matches that name at any depth ('node_modules' excludes every node_modules directory); with '*', a glob matched as written; ending in '/**' also excludes the named directory.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "depth": {
+          "description": "Levels to descend: 1 lists only entries directly in path. Omit for the whole tree.",
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "move_file",
+    "description": "Move and/or rename a file or directory in one operation, across directories or within one. Fails if the destination exists.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "File or directory to move or rename. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        },
+        "destination": {
+          "type": "string",
+          "description": "New path, including the name; nothing may exist there yet. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        }
+      },
+      "required": [
+        "source",
+        "destination"
+      ]
+    }
+  },
+  {
+    "name": "copy_file",
+    "description": "Copy one regular file, keeping its permissions and modification time, without reading its content into the conversation. Directories are not copied. Never overwrites: fails if the destination exists. Source and destination must be within allowed directories.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "File to copy."
+        },
+        "destination": {
+          "type": "string",
+          "description": "Path for the copy; nothing may exist there yet."
+        }
+      },
+      "required": [
+        "source",
+        "destination"
+      ]
+    }
+  },
+  {
+    "name": "search_files",
+    "description": "Find files and directories by NAME, never by content. Walks the tree under path, matching a case-sensitive glob against each entry's path relative to path: '*.ext' matches directly under path, '**/*.ext' or '**/name' at any depth. Returns full paths of all matches.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Directory to search under. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Glob matched against each entry's path relative to path, never its content."
+        },
+        "excludePatterns": {
+          "default": [],
+          "description": "Patterns of entries to leave out, with their contents, matched against each entry's path relative to path. Without '*', matches that name at any depth ('node_modules' excludes every node_modules directory); with '*', a glob matched as written; ending in '/**' also excludes the named directory.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "path",
+        "pattern"
+      ]
+    }
+  },
+  {
+    "name": "get_file_info",
+    "description": "Get a file or directory's metadata without reading its content: size, creation and last modified times, permissions, type and hard-link count.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "File or directory to describe. Absolute or relative to an allowed directory; must resolve inside the allowed directories."
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "list_allowed_directories",
+    "description": "List the directories this server may access; their subdirectories are accessible too. Use before accessing files to see which paths are available.",
+    "inputSchema": {
+      "type": "object",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {}
+    }
+  }
+]
