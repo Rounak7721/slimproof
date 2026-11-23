@@ -10,7 +10,7 @@ from slimproof.core.client import HttpServer
 
 
 def load_servers(
-    path: Path,
+    path: Path, cwd: Path | None = None
 ) -> tuple[dict[str, StdioServerParameters | HttpServer], dict[str, str]]:
     """Read a config's `mcpServers` block.
 
@@ -18,9 +18,14 @@ def load_servers(
     """
 
     data = json.loads(path.read_text(encoding="utf-8"))
+
     servers: dict[str, StdioServerParameters | HttpServer] = {}
     skipped: dict[str, str] = {}
-    for name, entry in data.get("mcpServers", {}).items():
+
+    project = data.get("projects", {}).get(str(cwd or Path.cwd()), {})
+    entries = {**data.get("mcpServers", {}), **project.get("mcpServers", {})}
+
+    for name, entry in entries.items():
         if "command" in entry:
             servers[name] = StdioServerParameters(
                 command=entry["command"], args=entry.get("args", []), env=entry.get("env")

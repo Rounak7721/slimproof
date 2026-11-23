@@ -40,3 +40,22 @@ def test_config_paths_finds_existing_files(tmp_path: Path, monkeypatch: pytest.M
     (tmp_path / ".mcp.json").write_text("{}", encoding="utf-8")
 
     assert config_paths(tmp_path) == [tmp_path / ".mcp.json", tmp_path / ".claude.json"]
+
+
+def test_load_servers_reads_local_scope_for_cwd(tmp_path: Path) -> None:
+    config = tmp_path / ".claude.json"
+    config.write_text(
+        json.dumps(
+            {
+                "mcpServers": {"user": {"command": "a"}},
+                "projects": {
+                    "/work/app": {"mcpServers": {"local": {"command": "b"}}},
+                    "/work/other": {"mcpServers": {"elsewhere": {"command": "c"}}},
+                },
+            }
+        )
+    )
+
+    servers, _ = load_servers(config, cwd=Path("/work/app"))
+
+    assert servers.keys() == {"user", "local"}
