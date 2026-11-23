@@ -22,7 +22,9 @@ def load_servers(
     servers: dict[str, StdioServerParameters | HttpServer] = {}
     skipped: dict[str, str] = {}
 
-    project = data.get("projects", {}).get(str(cwd or Path.cwd()), {})
+    projects = data.get("projects", {})
+    here = cwd or Path.cwd()
+    project = projects.get(here.as_posix()) or projects.get(str(here), {})
     entries = {**data.get("mcpServers", {}), **project.get("mcpServers", {})}
 
     for name, entry in entries.items():
