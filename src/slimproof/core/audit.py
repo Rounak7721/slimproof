@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from mcp import StdioServerParameters
 from mcp.server.mcpserver import MCPServer
@@ -67,6 +68,15 @@ async def audit_one(name: str, server: StdioServerParameters | HttpServer) -> Au
         return AuditResult(costs=[], errors={name: _error_message(e, _secrets(server))}, skipped={})
     result.costs.sort(key=lambda c: c.tokens, reverse=True)
     return result
+
+
+async def tool_definitions(server: StdioServerParameters | HttpServer) -> list[dict[str, Any]]:
+    """Every tool on `server` as JSON-ready dicts; a failure is raised with secrets masked."""
+    try:
+        tools = await list_tools(server)
+    except Exception as e:
+        raise RuntimeError(_error_message(e, _secrets(server))) from None
+    return [t.model_dump(mode="json", by_alias=True, exclude_none=True) for t in tools]
 
 
 async def audit(paths: list[Path]) -> AuditResult:

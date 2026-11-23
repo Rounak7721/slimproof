@@ -5,7 +5,7 @@ import pytest
 from mcp import StdioServerParameters
 
 from slimproof.core.client import HttpServer
-from slimproof.core.configs import config_paths, load_servers
+from slimproof.core.configs import config_paths, find_server, load_servers
 
 
 def test_load_servers_reads_stdio_and_http(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -59,3 +59,12 @@ def test_load_servers_reads_local_scope_for_cwd(tmp_path: Path) -> None:
     servers, _ = load_servers(config, cwd=Path("/work/app"))
 
     assert servers.keys() == {"user", "local"}
+
+
+def test_find_server_by_name(tmp_path: Path) -> None:
+    config = tmp_path / ".mcp.json"
+    config.write_text(json.dumps({"mcpServers": {"fs": {"command": "npx"}}}), encoding="utf-8")
+
+    assert find_server("fs", [config]) == StdioServerParameters(command="npx", args=[])
+    with pytest.raises(ValueError, match="'nope'"):
+        find_server("nope", [config])

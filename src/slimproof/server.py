@@ -9,9 +9,9 @@ from mcp import types
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 
-from slimproof.core.audit import audit, audit_one
+from slimproof.core.audit import audit, audit_one, tool_definitions
 from slimproof.core.client import server_from
-from slimproof.core.configs import config_paths
+from slimproof.core.configs import config_paths, find_server
 from slimproof.core.guard import compare as compare_tools
 from slimproof.core.report import to_json
 
@@ -20,10 +20,15 @@ mcp = MCPServer("slimproof", log_level="WARNING")
 READ_ONLY = types.ToolAnnotations(read_only_hint=True)
 
 
+def _paths(config_path: str | None) -> list[Path]:
+    """The given config, or every config auto-detected from the working directory."""
+    return [Path(config_path)] if config_path else config_paths(Path.cwd())
+
+
 @mcp.tool(annotations=READ_ONLY)
 async def audit_config(config_path: str | None = None) -> str:
     """Rank every tool in the MCP configs by token cost (JSON). Auto-detects configs if no path."""
-    paths = [Path(config_path)] if config_path else config_paths(Path.cwd())
+    paths = _paths(config_path)
     if not paths:
         return "No MCP config files found. Pass config_path."
     return to_json(await audit(paths))
@@ -45,3 +50,18 @@ def compare(original: list[dict[str, Any]], slim: list[dict[str, Any]]) -> str:
     before = [types.Tool.model_validate(t) for t in original]
     after = [types.Tool.model_validate(t) for t in slim]
     return json.dumps([asdict(c) for c in compare_tools(before, after)], indent=2)
+
+
+@mcp.tool(annotations=READ_ONLY)
+async def get_tools(
+    name: str | None = None,
+    command: list[str] | None = None,
+    url: str | None = None,
+    config_path: str | None = None,
+) -> str:
+    """Full tool definitions (JSON) of one server: by config `name`, stdio `command` or `url`."""
+    try:
+        server = find_server(name, _paths(config_path)) if name else server_from(command, url)[1]
+        return json.dumps(await tool_definitions(server))
+    except (ValueError, RuntimeError) as e:
+        raise ToolError(str(e)) from e

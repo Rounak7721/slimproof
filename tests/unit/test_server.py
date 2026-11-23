@@ -58,3 +58,17 @@ async def test_compare_reports_savings() -> None:
     assert isinstance(text, types.TextContent)
     [change] = json.loads(text.text)
     assert change["problems"] == [] and change["after"] < change["before"]
+
+
+@pytest.mark.anyio
+async def test_get_tools_output_feeds_compare() -> None:
+    async with Client(mcp) as client:
+        result = await client.call_tool("get_tools", {"command": [sys.executable, str(FIXTURE)]})
+        text = result.content[0]
+        assert isinstance(text, types.TextContent)
+        tools = json.loads(text.text)
+        result = await client.call_tool("compare", {"original": tools, "slim": tools})
+
+    text = result.content[0]
+    assert isinstance(text, types.TextContent)
+    assert [c["problems"] for c in json.loads(text.text)] == [[], []]

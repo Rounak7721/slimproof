@@ -54,3 +54,12 @@ def config_paths(cwd: Path) -> list[Path]:
         appdata / "Claude/claude_desktop_config.json",  # Windows
     ]
     return [p for p in candidates if p.is_file()]
+
+
+def find_server(name: str, paths: list[Path]) -> StdioServerParameters | HttpServer:
+    """The stdio or HTTP server called `name` in the first config in `paths` that has it."""
+    for path in paths:
+        servers, _ = load_servers(path)
+        if name in servers:
+            return servers[name]
+    raise ValueError(f"No stdio or HTTP server named '{name}' in the MCP configs.")
