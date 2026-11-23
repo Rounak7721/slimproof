@@ -5,6 +5,8 @@ Goal: the shortest description that still says **what the tool does, when to pic
 ## Never change
 - Tool names, parameter names, types, `required`, `enum`, `default`, `const`, `examples`.
 - Anything other than `description` and `title`. `compare` rejects every other change.
+- The meaning. Never add a fact that isn't in the original, even a likely one.
+- Hard constraints: allowed characters, limits, units, formats, error cases. Shorten their wording, never drop them.
 
 ## Keep
 - The action and what it acts on: "Read a file", not "File tool".
@@ -20,5 +22,5 @@ Goal: the shortest description that still says **what the tool does, when to pic
 | SP004 | Prose that only lists enum values | "One of: asc, desc." → remove it; the schema already has the enum |
 | SP005 | Markup and extra whitespace | headings, bullets, `**bold**`, blank lines → plain sentences |
 | SP006 | Over-long descriptions (> 1000 chars) | tutorials, long examples, changelogs → one sentence each for purpose, choice, constraints |
-| SP007 | Text repeated across tools | the same disclaimer on every tool → keep it once, on the most relevant tool |
+| SP007 | Boilerplate repeated across tools | the same disclaimer or intro on every tool → keep it once; a constraint that applies to each tool stays on each |
 | SP008 | Near-identical descriptions | **don't shorten**: add what makes each tool different |
