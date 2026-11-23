@@ -61,7 +61,8 @@ def _print_result(result: AuditResult, fmt: Literal["table", "json"]) -> None:
     if fmt == "json":
         typer.echo(to_json(result))
     else:
-        Console().print(to_table(result.costs))
+        if result.costs:
+            Console().print(to_table(result.costs))
         for name, msg in result.skipped.items():
             typer.echo(f"{name}: skipped ({msg})", err=True)
         for name, msg in result.errors.items():
