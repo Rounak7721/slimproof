@@ -1,6 +1,6 @@
 from mcp import types
 
-from slimproof.core.rules import Finding, check, sp001, sp002, sp007
+from slimproof.core.rules import Finding, check, sp001, sp002, sp006, sp007
 
 
 def _tool(description: str) -> types.Tool:
@@ -30,6 +30,19 @@ def test_sp002_flags_identifier_name_only() -> None:
 def test_sp007_flags_only_long_descriptions() -> None:
     assert sp007(_tool("x" * 1001)) == ["description is 1001 chars (limit 1000)"]
     assert sp007(_tool("x" * 1000)) == []
+
+
+def test_sp006_flags_each_markup_kind() -> None:
+    assert sp006(_tool("## Usage\n\n\n**Read** a file.")) == [
+        "contains blank-line runs",
+        "contains markdown headings",
+        "contains bold markers",
+    ]
+    assert sp006(_tool("Example:\n```json\n{}\n```")) == ["contains code fences"]
+
+
+def test_sp006_allows_plain_paragraphs() -> None:
+    assert sp006(_tool("Read a file.\n\nReturns its text.")) == []
 
 
 def test_check_returns_findings_with_ids() -> None:

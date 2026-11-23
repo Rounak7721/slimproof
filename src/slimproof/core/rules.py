@@ -1,5 +1,6 @@
 """Deterministic bloat rules: each finds one kind of wasted tokens in a tool definition."""
 
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -35,6 +36,14 @@ FILLER = (
     "allows you to",
 )
 
+MARKUP = {
+    "blank-line runs": re.compile(r"\n\s*\n\s*\n"),
+    "space runs": re.compile(r"[ \t]{3,}"),
+    "markdown headings": re.compile(r"^#{1,6} ", re.MULTILINE),
+    "bold markers": re.compile(r"\*\*"),
+    "code fences": re.compile(r"```"),
+}
+
 
 def sp001(tool: types.Tool) -> list[str]:
     """Description opens with filler like "This tool allows you to"."""
@@ -53,6 +62,12 @@ def sp002(tool: types.Tool) -> list[str]:
     return [f"repeats the tool name '{tool.name}'"] if tool.name.lower() in desc else []
 
 
+def sp006(tool: types.Tool) -> list[str]:
+    """Description carries markdown or whitespace the model doesn't need."""
+    desc = tool.description or ""
+    return [f"contains {kind}" for kind, pattern in MARKUP.items() if pattern.search(desc)]
+
+
 def sp007(tool: types.Tool, limit: int = 1000) -> list[str]:
     """Description is longer than `limit` characters."""
     n = len(tool.description or "")
@@ -62,6 +77,7 @@ def sp007(tool: types.Tool, limit: int = 1000) -> list[str]:
 RULES = [
     Rule("SP001", "Filler opener", sp001),
     Rule("SP002", "Repeats tool name", sp002),
+    Rule("SP006", "Markup bloat", sp006),
     Rule("SP007", "Long description", sp007),
 ]
 
