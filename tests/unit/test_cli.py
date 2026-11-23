@@ -42,3 +42,11 @@ def test_server_table_lists_findings() -> None:
     result = CliRunner().invoke(app, ["server", "--", sys.executable, str(FIXTURE)])
 
     assert "SP006" in result.stdout
+
+
+def test_cli_import_keeps_logging_quiet() -> None:
+    import logging
+
+    import slimproof.cli  # noqa: F401  (importing it is the point)
+
+    assert logging.getLogger().level >= logging.WARNING

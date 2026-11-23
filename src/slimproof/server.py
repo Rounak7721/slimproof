@@ -15,7 +15,7 @@ from slimproof.core.configs import config_paths
 from slimproof.core.guard import compare as compare_tools
 from slimproof.core.report import to_json
 
-mcp = MCPServer("slimproof")
+mcp = MCPServer("slimproof", log_level="WARNING")
 
 READ_ONLY = types.ToolAnnotations(read_only_hint=True)
 
@@ -31,9 +31,7 @@ async def audit_config(config_path: str | None = None) -> str:
 
 @mcp.tool(annotations=READ_ONLY)
 async def audit_server(command: list[str] | None = None, url: str | None = None) -> str:
-    """Audit one MCP server by stdio command (["npx", "-y", "pkg"])
-    or HTTP url: costs + findings.
-    """
+    """Audit one MCP server by stdio command (["npx", "-y", "pkg"]) or HTTP url."""
     try:
         name, server = server_from(command, url)
     except ValueError as e:
@@ -43,9 +41,7 @@ async def audit_server(command: list[str] | None = None, url: str | None = None)
 
 @mcp.tool(annotations=READ_ONLY)
 def compare(original: list[dict[str, Any]], slim: list[dict[str, Any]]) -> str:
-    """Check slim tool definitions against the originals:
-    token savings + lossless-guard problems.
-    """
+    """Check slim tools against originals: token savings + lossless-guard problems."""
     before = [types.Tool.model_validate(t) for t in original]
     after = [types.Tool.model_validate(t) for t in slim]
     return json.dumps([asdict(c) for c in compare_tools(before, after)], indent=2)
