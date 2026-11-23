@@ -3,6 +3,8 @@
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
+from difflib import SequenceMatcher
+from itertools import combinations
 from typing import Any
 
 from mcp import types
@@ -25,6 +27,15 @@ class Rule:
     id: str
     title: str
     check: Callable[[types.Tool], list[str]]
+
+
+@dataclass(frozen=True)
+class ServerRule:
+    """A bloat rule that compares all tools of one server: returns (tool, message) pairs."""
+
+    id: str
+    title: str
+    check: Callable[[list[types.Tool]], list[tuple[str, str]]]
 
 
 FILLER = (
@@ -81,6 +92,12 @@ def _words(text: str) -> set[str]:
     return set(re.findall(r"[a-z]+", text.lower()))
 
 
+def _sentences(text: str, min_chars: int = 40) -> list[str]:
+    """Lowercased sentences of `text` long enough to be worth comparing."""
+    parts = re.split(r"(?<=[.!?])\s+|\n+", text)
+    return [p.strip().lower() for p in parts if len(p.strip()) >= min_chars]
+
+
 def sp001(tool: types.Tool) -> list[str]:
     """Description opens with filler like "This tool allows you to"."""
 
@@ -120,16 +137,42 @@ def sp004(tool: types.Tool, min_values: int = 3) -> list[str]:
     return found
 
 
-def sp006(tool: types.Tool) -> list[str]:
+def sp005(tool: types.Tool) -> list[str]:
     """Description carries markdown or whitespace the model doesn't need."""
     desc = tool.description or ""
     return [f"contains {kind}" for kind, pattern in MARKUP.items() if pattern.search(desc)]
 
 
-def sp007(tool: types.Tool, limit: int = 1000) -> list[str]:
+def sp006(tool: types.Tool, limit: int = 1000) -> list[str]:
     """Description is longer than `limit` characters."""
     n = len(tool.description or "")
     return [f"description is {n} chars (limit {limit})"] if n > limit else []
+
+
+def sp007(tools: list[types.Tool]) -> list[tuple[str, str]]:
+    """The same sentence appears in more than one tool's description."""
+    first_seen: dict[str, str] = {}  # sentence -> first tool that used it
+    found = []
+    for tool in tools:
+        for s in _sentences(tool.description or ""):
+            if first_seen.get(s, tool.name) != tool.name:
+                found.append(
+                    (tool.name, f"repeats a sentence from '{first_seen[s]}': \"{s[:60]}\"")
+                )
+            first_seen.setdefault(s, tool.name)
+    return found
+
+
+def sp008(tools: list[types.Tool], threshold: float = 0.85) -> list[tuple[str, str]]:
+    """Two tools have near-identical descriptions, so the model may pick the wrong one."""
+    found = []
+    for a, b in combinations(tools, 2):  # ponytail: O(n^2) pairs, fine for a few hundred tools
+        if not (a.description and b.description):
+            continue
+        ratio = SequenceMatcher(None, a.description, b.description).ratio()
+        if ratio >= threshold:
+            found.append((a.name, f"{ratio:.0%} similar to '{b.name}': clarify, don't shorten"))
+    return found
 
 
 RULES = [
@@ -137,17 +180,24 @@ RULES = [
     Rule("SP002", "Repeats tool name", sp002),
     Rule("SP003", "Param restates type", sp003),
     Rule("SP004", "Enum repeated in prose", sp004),
-    Rule("SP006", "Markup bloat", sp006),
-    Rule("SP007", "Long description", sp007),
+    Rule("SP005", "Markup bloat", sp005),
+    Rule("SP006", "Long description", sp006),
+]
+
+SERVER_RULES = [
+    ServerRule("SP007", "Duplicated text", sp007),
+    ServerRule("SP008", "Ambiguous tools", sp008),
 ]
 
 
 def check(server: str, tools: list[types.Tool]) -> list[Finding]:
     """Run every rule on every tool of `server`."""
 
-    return [
+    per_tool = [
         Finding(rule.id, server, tool.name, msg)
         for tool in tools
         for rule in RULES
         for msg in rule.check(tool)
     ]
+    cross = [Finding(r.id, server, t, msg) for r in SERVER_RULES for t, msg in r.check(tools)]
+    return per_tool + cross

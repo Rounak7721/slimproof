@@ -2,7 +2,18 @@ from typing import Any
 
 from mcp import types
 
-from slimproof.core.rules import Finding, check, sp001, sp002, sp003, sp004, sp006, sp007
+from slimproof.core.rules import (
+    Finding,
+    check,
+    sp001,
+    sp002,
+    sp003,
+    sp004,
+    sp005,
+    sp006,
+    sp007,
+    sp008,
+)
 
 
 def _tool(description: str) -> types.Tool:
@@ -53,22 +64,35 @@ def test_sp004_flags_pure_enum_lists_only() -> None:
     assert sp004(_params_tool({"mode": mode})) == []
 
 
-def test_sp007_flags_only_long_descriptions() -> None:
-    assert sp007(_tool("x" * 1001)) == ["description is 1001 chars (limit 1000)"]
-    assert sp007(_tool("x" * 1000)) == []
-
-
-def test_sp006_flags_each_markup_kind() -> None:
-    assert sp006(_tool("## Usage\n\n\n**Read** a file.")) == [
+def test_sp005_flags_each_markup_kind() -> None:
+    assert sp005(_tool("## Usage\n\n\n**Read** a file.")) == [
         "contains blank-line runs",
         "contains markdown headings",
         "contains bold markers",
     ]
-    assert sp006(_tool("Example:\n```json\n{}\n```")) == ["contains code fences"]
+    assert sp005(_tool("Example:\n```json\n{}\n```")) == ["contains code fences"]
 
 
-def test_sp006_allows_plain_paragraphs() -> None:
-    assert sp006(_tool("Read a file.\n\nReturns its text.")) == []
+def test_sp005_allows_plain_paragraphs() -> None:
+    assert sp005(_tool("Read a file.\n\nReturns its text.")) == []
+
+
+def test_sp006_flags_only_long_descriptions() -> None:
+    assert sp006(_tool("x" * 1001)) == ["description is 1001 chars (limit 1000)"]
+    assert sp006(_tool("x" * 1000)) == []
+
+
+def test_sp007_flags_sentence_repeated_in_another_tool() -> None:
+    note = "Paths are relative to the vault root and must not start with a slash."
+    tools = [_named("read", "Read a note. " + note), _named("write", "Write. " + note)]
+    assert [tool for tool, _ in sp007(tools)] == ["write"]
+
+
+def test_sp008_flags_near_identical_tools_only() -> None:
+    a = _named("a", "Read a note from the vault.")
+    b = _named("b", "Read a note from the vault!")
+    c = _named("c", "Delete every file in a folder.")
+    assert sp008([a, b, c]) == [("a", "96% similar to 'b': clarify, don't shorten")]
 
 
 def test_check_returns_findings_with_ids() -> None:
