@@ -45,7 +45,25 @@ def sp001(tool: types.Tool) -> list[str]:
     return [f"opens with filler '{match}'"] if match else []
 
 
-RULES = [Rule("SP001", "Filler opener", sp001)]
+def sp002(tool: types.Tool) -> list[str]:
+    """Description repeats the tool's identifier, like `read_file`."""
+    if not any(sep in tool.name for sep in "_-."):
+        return []  # single words like "search" appear naturally in prose
+    desc = (tool.description or "").lower()
+    return [f"repeats the tool name '{tool.name}'"] if tool.name.lower() in desc else []
+
+
+def sp007(tool: types.Tool, limit: int = 1000) -> list[str]:
+    """Description is longer than `limit` characters."""
+    n = len(tool.description or "")
+    return [f"description is {n} chars (limit {limit})"] if n > limit else []
+
+
+RULES = [
+    Rule("SP001", "Filler opener", sp001),
+    Rule("SP002", "Repeats tool name", sp002),
+    Rule("SP007", "Long description", sp007),
+]
 
 
 def check(server: str, tools: list[types.Tool]) -> list[Finding]:
