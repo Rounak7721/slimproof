@@ -1,12 +1,25 @@
 """Lossless guard: a slim rewrite may change wording, never structure."""
 
+from dataclasses import dataclass
 from typing import Any
 
 from mcp import types
 
+from slimproof.core.tokens import estimate_tokens, tool_text
+
 WORDING = {"description", "title"}
 NAME_MAPS = {"properties", "patternProperties", "$defs", "definitions"}
 DATA = {"default", "enum", "const", "examples"}
+
+
+@dataclass(frozen=True)
+class ToolChange:
+    """Token cost before and after slimming one tool, and anything the guard rejected."""
+
+    tool: str
+    before: int
+    after: int
+    problems: list[str]
 
 
 def _structure(node: Any) -> Any:
@@ -43,8 +56,27 @@ def _diff(a: Any, b: Any, path: str) -> list[str]:
     return out
 
 
+def _cost(tool: types.Tool) -> int:
+    return estimate_tokens(tool_text(tool))
+
+
 def guard(original: types.Tool, slim: types.Tool) -> list[str]:
     """Structural changes from `original` to `slim`; an empty list means only wording changed."""
     before = _structure(original.model_dump(by_alias=True, exclude_none=True))
     after = _structure(slim.model_dump(by_alias=True, exclude_none=True))
     return _diff(before, after, original.name)
+
+
+def compare(original: list[types.Tool], slim: list[types.Tool]) -> list[ToolChange]:
+    """Pair tools by name; report token savings and guard problems for each."""
+    slim_by_name = {t.name: t for t in slim}
+    changes = []
+    for tool in original:
+        new = slim_by_name.pop(tool.name, None)
+        if new is None:
+            changes.append(ToolChange(tool.name, _cost(tool), 0, ["missing from the slim version"]))
+        else:
+            changes.append(ToolChange(tool.name, _cost(tool), _cost(new), guard(tool, new)))
+    for name, extra in slim_by_name.items():
+        changes.append(ToolChange(name, 0, _cost(extra), ["not in the original"]))
+    return changes

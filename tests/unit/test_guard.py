@@ -2,7 +2,9 @@ from typing import Any
 
 from mcp import types
 
-from slimproof.core.guard import guard
+from slimproof.core.guard import compare, guard
+
+PATH = {"path": {"type": "string", "description": "Path of the file to read, relative to root."}}
 
 
 def _tool(description: str, properties: dict[str, Any]) -> types.Tool:
@@ -10,7 +12,8 @@ def _tool(description: str, properties: dict[str, Any]) -> types.Tool:
     return types.Tool(name="read", description=description, input_schema=schema)
 
 
-PATH = {"path": {"type": "string", "description": "Path of the file to read, relative to root."}}
+def _named(name: str, description: str) -> types.Tool:
+    return types.Tool(name=name, description=description, input_schema={"type": "object"})
 
 
 def test_wording_only_changes_pass() -> None:
@@ -36,3 +39,20 @@ def test_default_values_are_data() -> None:
     before = {"o": {"type": "object", "default": {"description": "keep"}}}
     after = {"o": {"type": "object", "default": {"description": "changed"}}}
     assert guard(_tool("x", before), _tool("x", after)) != []
+
+
+def test_compare_reports_savings_and_unpaired_tools() -> None:
+    original = [
+        _named("read", "This tool allows you to read a file from disk."),
+        _named("ping", "Pong."),
+    ]
+    slim = [_named("read", "Read a file."), _named("pong", "Pong.")]
+
+    changes = compare(original, slim)
+
+    assert [c.problems for c in changes] == [
+        [],
+        ["missing from the slim version"],
+        ["not in the original"],
+    ]
+    assert changes[0].after < changes[0].before
