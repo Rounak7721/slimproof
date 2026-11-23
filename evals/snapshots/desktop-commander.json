@@ -15,20 +15,6 @@
       },
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Get Configuration",
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
-    },
-    "_meta": {
-      "ui/resourceUri": "ui://desktop-commander/config-editor",
-      "openai/outputTemplate": "ui://desktop-commander/config-editor",
-      "ui": {
-        "resourceUri": "ui://desktop-commander/config-editor"
-      },
-      "openai/widgetAccessible": true
     }
   },
   {
@@ -76,12 +62,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Set Configuration Value",
-      "readOnlyHint": false,
-      "destructiveHint": true,
-      "openWorldHint": false
     }
   },
   {
@@ -128,20 +108,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Read File or URL",
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": true
-    },
-    "_meta": {
-      "ui/resourceUri": "ui://desktop-commander/file-preview",
-      "openai/outputTemplate": "ui://desktop-commander/file-preview",
-      "ui": {
-        "resourceUri": "ui://desktop-commander/file-preview"
-      },
-      "openai/widgetAccessible": true
     }
   },
   {
@@ -162,12 +128,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Read Multiple Files",
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
     }
   },
   {
@@ -204,20 +164,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Write File",
-      "readOnlyHint": false,
-      "destructiveHint": true,
-      "openWorldHint": false
-    },
-    "_meta": {
-      "ui/resourceUri": "ui://desktop-commander/file-preview",
-      "openai/outputTemplate": "ui://desktop-commander/file-preview",
-      "ui": {
-        "resourceUri": "ui://desktop-commander/file-preview"
-      },
-      "openai/widgetAccessible": true
     }
   },
   {
@@ -306,12 +252,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Write/Modify PDF",
-      "readOnlyHint": false,
-      "destructiveHint": true,
-      "openWorldHint": false
     }
   },
   {
@@ -329,12 +269,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Create Directory",
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "openWorldHint": false
     }
   },
   {
@@ -363,20 +297,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "List Directory Contents",
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
-    },
-    "_meta": {
-      "ui/resourceUri": "ui://desktop-commander/file-preview",
-      "openai/outputTemplate": "ui://desktop-commander/file-preview",
-      "ui": {
-        "resourceUri": "ui://desktop-commander/file-preview"
-      },
-      "openai/widgetAccessible": true
     }
   },
   {
@@ -398,12 +318,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Move/Rename File",
-      "readOnlyHint": false,
-      "destructiveHint": true,
-      "openWorldHint": false
     }
   },
   {
@@ -471,12 +385,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Start Search",
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
     }
   },
   {
@@ -503,12 +411,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Get Search Results",
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
     }
   },
   {
@@ -526,12 +428,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Stop Search",
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "openWorldHint": false
     }
   },
   {
@@ -542,12 +438,6 @@
       "properties": {},
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "List Active Searches",
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
     }
   },
   {
@@ -565,12 +455,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Get File Information",
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
     }
   },
   {
@@ -613,20 +497,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Edit Block",
-      "readOnlyHint": false,
-      "destructiveHint": true,
-      "openWorldHint": false
-    },
-    "_meta": {
-      "ui/resourceUri": "ui://desktop-commander/file-preview",
-      "openai/outputTemplate": "ui://desktop-commander/file-preview",
-      "ui": {
-        "resourceUri": "ui://desktop-commander/file-preview"
-      },
-      "openai/widgetAccessible": true
     }
   },
   {
@@ -661,12 +531,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Start Terminal Process",
-      "readOnlyHint": false,
-      "destructiveHint": true,
-      "openWorldHint": true
     }
   },
   {
@@ -696,12 +560,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Read Process Output",
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
     }
   },
   {
@@ -732,12 +590,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Send Input to Process",
-      "readOnlyHint": false,
-      "destructiveHint": true,
-      "openWorldHint": true
     }
   },
   {
@@ -755,12 +607,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Force Terminate Process",
-      "readOnlyHint": false,
-      "destructiveHint": true,
-      "openWorldHint": false
     }
   },
   {
@@ -771,12 +617,6 @@
       "properties": {},
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "List Terminal Sessions",
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
     }
   },
   {
@@ -787,12 +627,6 @@
       "properties": {},
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "List Running Processes",
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
     }
   },
   {
@@ -810,12 +644,6 @@
       ],
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Kill Process",
-      "readOnlyHint": false,
-      "destructiveHint": true,
-      "openWorldHint": false
     }
   },
   {
@@ -826,12 +654,6 @@
       "properties": {},
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Get Usage Statistics",
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
     }
   },
   {
@@ -856,12 +678,6 @@
       },
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Get Recent Tool Calls",
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "openWorldHint": false
     }
   },
   {
@@ -872,12 +688,6 @@
       "properties": {},
       "additionalProperties": false,
       "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "annotations": {
-      "title": "Give Feedback",
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "openWorldHint": true
     }
   }
 ]

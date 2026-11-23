@@ -28,9 +28,6 @@
         "uid"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -49,9 +46,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -84,9 +78,6 @@
         "to_uid"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -176,9 +167,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -233,9 +221,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -268,9 +253,6 @@
         "value"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -316,9 +298,6 @@
         "elements"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -342,9 +321,6 @@
         "msgid"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": true
     }
   },
   {
@@ -382,9 +358,6 @@
         "uid"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": true
     }
   },
   {
@@ -415,9 +388,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -449,9 +419,6 @@
         "action"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -479,9 +446,6 @@
         "uid"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -522,9 +486,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -598,9 +559,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": true
     }
   },
   {
@@ -663,9 +621,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": true
     }
   },
   {
@@ -676,9 +631,6 @@
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "properties": {},
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": true
     }
   },
   {
@@ -733,9 +685,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -768,9 +717,6 @@
         "url"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -799,9 +745,6 @@
         "insightName"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": true
     }
   },
   {
@@ -838,9 +781,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -863,9 +803,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -893,9 +830,6 @@
         "key"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -928,9 +862,6 @@
         "height"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -953,9 +884,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -974,9 +902,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -999,9 +924,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": true
     }
   },
   {
@@ -1028,9 +950,6 @@
         "logpoints"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -1054,9 +973,6 @@
         "filePath"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -1103,9 +1019,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -1132,9 +1045,6 @@
         "pageId"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -1162,9 +1072,6 @@
         "text"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -1201,9 +1108,6 @@
         "filePaths"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false
     }
   },
   {
@@ -1242,9 +1146,6 @@
         "text"
       ],
       "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": true
     }
   }
 ]
