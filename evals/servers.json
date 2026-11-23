@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "playwright": {"command": "npx", "args": ["-y", "@playwright/mcp@0.0.86"]},
+    "chrome-devtools": {"command": "npx", "args": ["-y", "chrome-devtools-mcp@1.13.0"]},
+    "filesystem": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem@2.4.0", "/tmp"]},
+    "desktop-commander": {"command": "npx", "args": ["-y", "@wonderwhy-er/desktop-commander@0.3.4"]},
+    "github": {"command": "docker", "args": ["run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN=dummy", "ghcr.io/github/github-mcp-server:v2.2.0"]},
+    "notion": {"command": "npx", "args": ["-y", "@notionhq/notion-mcp-server@2.6.1"]}
+  }
+}
