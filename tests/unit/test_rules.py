@@ -1,6 +1,8 @@
+from typing import Any
+
 from mcp import types
 
-from slimproof.core.rules import Finding, check, sp001, sp002, sp006, sp007
+from slimproof.core.rules import Finding, check, sp001, sp002, sp003, sp004, sp006, sp007
 
 
 def _tool(description: str) -> types.Tool:
@@ -9,6 +11,11 @@ def _tool(description: str) -> types.Tool:
 
 def _named(name: str, description: str) -> types.Tool:
     return types.Tool(name=name, description=description, input_schema={"type": "object"})
+
+
+def _params_tool(properties: dict[str, Any]) -> types.Tool:
+    schema = {"type": "object", "properties": properties}
+    return types.Tool(name="x", description="d", input_schema=schema)
 
 
 def test_sp001_flags_filler_opener() -> None:
@@ -25,6 +32,25 @@ def test_sp002_flags_identifier_name_only() -> None:
     assert sp002(_named("read_file", "read_file: reads a file.")) != []
     assert sp002(_named("read_file", "Read file contents.")) == []
     assert sp002(_named("search", "Search the files.")) == []
+
+
+def test_sp003_flags_restated_type_only() -> None:
+    restated = {"type": "string", "description": "A string that is the path."}
+    useful = {"type": "string", "description": "Absolute path inside the vault."}
+    assert sp003(_params_tool({"path": restated})) != []
+    assert sp003(_params_tool({"path": useful, "x": {"type": "string"}})) == []
+
+
+def test_sp004_flags_pure_enum_lists_only() -> None:
+    mode = {"type": "string", "enum": ["read", "write", "append"]}
+
+    def desc(text: str) -> types.Tool:
+        return _params_tool({"mode": {**mode, "description": text}})
+
+    assert sp004(desc("One of: read, write, append."))
+    assert sp004(desc("Must be `read`, `write` or `append`."))
+    assert sp004(desc("read opens it, write replaces it, append adds.")) == []
+    assert sp004(_params_tool({"mode": mode})) == []
 
 
 def test_sp007_flags_only_long_descriptions() -> None:

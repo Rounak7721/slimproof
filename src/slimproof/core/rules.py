@@ -3,6 +3,7 @@
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
 
 from mcp import types
 
@@ -44,6 +45,41 @@ MARKUP = {
     "code fences": re.compile(r"```"),
 }
 
+NOISE = {
+    "a",
+    "an",
+    "the",
+    "that",
+    "is",
+    "of",
+    "which",
+    "value",
+    "parameter",
+    "param",
+    "string",
+    "str",
+    "integer",
+    "int",
+    "number",
+    "boolean",
+    "bool",
+    "array",
+    "list",
+    "object",
+}
+
+LIST_WORDS = {"one", "or", "and", "either", "must", "be", "can", "values", "options"}
+
+
+def _params(tool: types.Tool) -> dict[str, dict[str, Any]]:
+    """Top-level parameters of `tool`: name -> its JSON Schema."""
+    return tool.input_schema.get("properties", {})
+
+
+def _words(text: str) -> set[str]:
+    """Lowercase words in `text`, punctuation dropped."""
+    return set(re.findall(r"[a-z]+", text.lower()))
+
 
 def sp001(tool: types.Tool) -> list[str]:
     """Description opens with filler like "This tool allows you to"."""
@@ -62,6 +98,28 @@ def sp002(tool: types.Tool) -> list[str]:
     return [f"repeats the tool name '{tool.name}'"] if tool.name.lower() in desc else []
 
 
+def sp003(tool: types.Tool) -> list[str]:
+    """A parameter description only restates its name and type ("A string that is the path")."""
+    found = []
+    for name, schema in _params(tool).items():
+        words = _words(schema.get("description", ""))
+        if words and words <= NOISE | _words(name):
+            found.append(f"'{name}' description only restates its name and type")
+    return found
+
+
+def sp004(tool: types.Tool, min_values: int = 3) -> list[str]:
+    """A parameter description only lists its enum values ("One of: read, write, append")."""
+    found = []
+    for name, schema in _params(tool).items():
+        values = [str(v) for v in schema.get("enum", [])]
+        desc = schema.get("description", "")
+        leftover = _words(desc) - _words(" ".join(values)) - NOISE - LIST_WORDS
+        if len(values) >= min_values and desc and not leftover:
+            found.append(f"'{name}' description only lists its {len(values)} enum values")
+    return found
+
+
 def sp006(tool: types.Tool) -> list[str]:
     """Description carries markdown or whitespace the model doesn't need."""
     desc = tool.description or ""
@@ -77,6 +135,8 @@ def sp007(tool: types.Tool, limit: int = 1000) -> list[str]:
 RULES = [
     Rule("SP001", "Filler opener", sp001),
     Rule("SP002", "Repeats tool name", sp002),
+    Rule("SP003", "Param restates type", sp003),
+    Rule("SP004", "Enum repeated in prose", sp004),
     Rule("SP006", "Markup bloat", sp006),
     Rule("SP007", "Long description", sp007),
 ]
