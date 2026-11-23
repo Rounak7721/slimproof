@@ -1,0 +1,778 @@
+[
+  {
+    "name": "browser_close",
+    "description": "Close the browser and all open tabs.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_resize",
+    "description": "Resize the browser window",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "number",
+          "description": "Window width"
+        },
+        "height": {
+          "type": "number",
+          "description": "Window height"
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_console_messages",
+    "description": "Return the page's console messages.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "level": {
+          "default": "info",
+          "description": "Minimum level; each level includes more severe ones.",
+          "type": "string",
+          "enum": [
+            "error",
+            "warning",
+            "info",
+            "debug"
+          ]
+        },
+        "all": {
+          "description": "Return messages since the session started, not just since the last navigation. Defaults to false.",
+          "type": "boolean"
+        },
+        "filename": {
+          "description": "File to save to; relative paths resolve against the workspace root. Omit to return text.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "level"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_handle_dialog",
+    "description": "Accept or dismiss a dialog.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "accept": {
+          "type": "boolean",
+          "description": "Accept the dialog."
+        },
+        "promptText": {
+          "description": "Text to enter in a prompt dialog.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "accept"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_emulate_media",
+    "description": "Emulate CSS media features, e.g. light/dark color scheme. Omitted parameters stay unchanged; null clears an override.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "colorScheme": {
+          "description": "prefers-color-scheme",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "light",
+                "dark"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reducedMotion": {
+          "description": "prefers-reduced-motion",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "reduce",
+                "no-preference"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "forcedColors": {
+          "description": "forced-colors",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "active",
+                "none"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contrast": {
+          "description": "prefers-contrast",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "more",
+                "no-preference"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "media": {
+          "description": "CSS media type of the page",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "screen",
+                "print"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_evaluate",
+    "description": "Evaluate a JavaScript expression on the page or an element.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "element": {
+          "description": "Human-readable element description, used to get permission to interact with it",
+          "type": "string"
+        },
+        "target": {
+          "description": "Exact element ref from the page snapshot, or a unique selector",
+          "type": "string"
+        },
+        "function": {
+          "type": "string",
+          "description": "() => { /* code */ } or (element) => { /* code */ } when element is provided"
+        },
+        "filename": {
+          "description": "File to save the result to; relative paths resolve against the workspace root. Omit to return text.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "function"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_file_upload",
+    "description": "Upload one or more files.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "paths": {
+          "description": "Absolute paths of the files to upload. Omit to cancel the file chooser.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_drop",
+    "description": "Drop files or MIME-typed data onto an element, as if dragged from outside the page. Provide paths, data, or both.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "element": {
+          "description": "Human-readable element description, used to get permission to interact with it",
+          "type": "string"
+        },
+        "target": {
+          "type": "string",
+          "description": "Exact element ref from the page snapshot, or a unique selector"
+        },
+        "paths": {
+          "description": "Absolute paths of files to drop.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "description": "Map of MIME type to string value, e.g. {\"text/plain\": \"hello\", \"text/uri-list\": \"https://example.com\"}.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "target"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_find",
+    "description": "Search the page's accessibility snapshot for text or a regex. Returns matching nodes with a few lines of context under their tree path; cheaper than a full snapshot when you only need to locate an element and its ref.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "text": {
+          "description": "Case-insensitive substring to find. Use text or regex, not both.",
+          "type": "string"
+        },
+        "regex": {
+          "description": "Regex to find, case-sensitive by default; wrap in slashes for flags, e.g. \"/error/i\". Use text or regex, not both.",
+          "type": "string"
+        },
+        "maxResults": {
+          "description": "Maximum matches to return. Defaults to all.",
+          "type": "number"
+        },
+        "filename": {
+          "description": "Save results to this file instead of returning them; relative paths resolve against the workspace root.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_fill_form",
+    "description": "Fill several form fields at once.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "element": {
+                "description": "Human-readable element description, used to get permission to interact with it",
+                "type": "string"
+              },
+              "target": {
+                "type": "string",
+                "description": "Exact element ref from the page snapshot, or a unique selector"
+              },
+              "name": {
+                "type": "string",
+                "description": "Human-readable field name"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "textbox",
+                  "checkbox",
+                  "radio",
+                  "combobox",
+                  "slider"
+                ],
+                "description": "Field type"
+              },
+              "value": {
+                "type": "string",
+                "description": "Value to fill: `true`/`false` for a checkbox, the option text for a combobox."
+              }
+            },
+            "required": [
+              "target",
+              "name",
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Fields to fill"
+        }
+      },
+      "required": [
+        "fields"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_press_key",
+    "description": "Press a keyboard key.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Key name or character, e.g. `ArrowLeft` or `a`"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_type",
+    "description": "Type text into an editable element.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "element": {
+          "description": "Human-readable element description, used to get permission to interact with it",
+          "type": "string"
+        },
+        "target": {
+          "type": "string",
+          "description": "Exact element ref from the page snapshot, or a unique selector"
+        },
+        "text": {
+          "type": "string",
+          "description": "Text to type"
+        },
+        "submit": {
+          "description": "Press Enter after typing",
+          "type": "boolean"
+        },
+        "slowly": {
+          "description": "Type one character at a time, to trigger key handlers. By default the whole text is filled at once.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "target",
+        "text"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_navigate",
+    "description": "Navigate to a URL",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL to open"
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_navigate_back",
+    "description": "Go back to the previous page in history.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_network_requests",
+    "description": "List the network requests since the page loaded, numbered. Get full details of one with browser_network_request.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "static": {
+          "default": false,
+          "description": "Include successful static resources (images, fonts, scripts, etc.). Defaults to false.",
+          "type": "boolean"
+        },
+        "filter": {
+          "description": "Only requests whose URL matches this regex, e.g. \"/api/.*user\".",
+          "type": "string"
+        },
+        "all": {
+          "description": "Return requests since the session started, not just since the last navigation. Defaults to false.",
+          "type": "boolean"
+        },
+        "filename": {
+          "description": "File to save to; relative paths resolve against the workspace root. Omit to return text.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "static"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_network_request",
+    "description": "Get full details (headers and body) of one network request, or one part if `part` is set. Use the number from browser_network_requests.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991,
+          "description": "1-based request number from browser_network_requests."
+        },
+        "part": {
+          "description": "Return only this part. Omit for full details.",
+          "type": "string",
+          "enum": [
+            "request-headers",
+            "request-body",
+            "response-headers",
+            "response-body"
+          ]
+        },
+        "filename": {
+          "description": "File to save to; relative paths resolve against the workspace root. Omit to return text.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "index"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_run_code_unsafe",
+    "description": "Run a Playwright code snippet. Unsafe: executes arbitrary JavaScript in the Playwright server process and is RCE-equivalent.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "JavaScript function called with one argument, page. Example: `async (page) => { await page.getByRole('button', { name: 'Submit' }).click(); return await page.title(); }`",
+          "type": "string"
+        },
+        "filename": {
+          "description": "Load the code from this file; relative paths resolve against the workspace root. If both are given, code is ignored.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_take_screenshot",
+    "description": "Take a screenshot of the current page. For actions, use browser_snapshot by default. With the vision capability, use screenshot coordinates with the coordinate-based mouse tools for elements missing from the accessibility snapshot.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "element": {
+          "description": "Human-readable element description, used to get permission to interact with it",
+          "type": "string"
+        },
+        "target": {
+          "description": "Exact element ref from the page snapshot, or a unique selector",
+          "type": "string"
+        },
+        "type": {
+          "description": "Image format. If unset, inferred from the filename extension, else png.",
+          "type": "string",
+          "enum": [
+            "png",
+            "jpeg",
+            "webp"
+          ]
+        },
+        "filename": {
+          "description": "File to save to; relative paths resolve against the workspace root. Default: `page-{timestamp}.{png|jpeg|webp}` in the output directory.",
+          "type": "string"
+        },
+        "fullPage": {
+          "description": "Capture the full scrollable page instead of the viewport. Not allowed with element screenshots.",
+          "type": "boolean"
+        },
+        "scale": {
+          "default": "css",
+          "description": "\"css\": sized in CSS pixels (smaller, same on every device). \"device\": device pixels (larger, high resolution).",
+          "type": "string",
+          "enum": [
+            "css",
+            "device"
+          ]
+        }
+      },
+      "required": [
+        "scale"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_snapshot",
+    "description": "Capture the current page's accessibility snapshot; better than a screenshot.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "target": {
+          "description": "Exact element ref from the page snapshot, or a unique selector",
+          "type": "string"
+        },
+        "filename": {
+          "description": "Save the snapshot to this file instead of returning it; relative paths resolve against the workspace root.",
+          "type": "string"
+        },
+        "depth": {
+          "description": "Maximum tree depth",
+          "type": "number"
+        },
+        "boxes": {
+          "description": "Add each element's bounding box as [box=x,y,width,height]: viewport-relative CSS pixels (getBoundingClientRect).",
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_click",
+    "description": "Click an element on the page.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "element": {
+          "description": "Human-readable element description, used to get permission to interact with it",
+          "type": "string"
+        },
+        "target": {
+          "type": "string",
+          "description": "Exact element ref from the page snapshot, or a unique selector"
+        },
+        "doubleClick": {
+          "description": "Double-click instead of single click",
+          "type": "boolean"
+        },
+        "button": {
+          "description": "Mouse button, default left",
+          "type": "string",
+          "enum": [
+            "left",
+            "right",
+            "middle"
+          ]
+        },
+        "modifiers": {
+          "description": "Modifier keys to hold",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Alt",
+              "Control",
+              "ControlOrMeta",
+              "Meta",
+              "Shift"
+            ]
+          }
+        }
+      },
+      "required": [
+        "target"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_drag",
+    "description": "Drag and drop from one element to another.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "startElement": {
+          "description": "Human-readable source element description, used to get permission to interact with it",
+          "type": "string"
+        },
+        "startTarget": {
+          "type": "string",
+          "description": "Exact element ref from the page snapshot, or a unique selector"
+        },
+        "endElement": {
+          "description": "Human-readable target element description, used to get permission to interact with it",
+          "type": "string"
+        },
+        "endTarget": {
+          "type": "string",
+          "description": "Exact element ref from the page snapshot, or a unique selector"
+        }
+      },
+      "required": [
+        "startTarget",
+        "endTarget"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_hover",
+    "description": "Hover over an element on the page.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "element": {
+          "description": "Human-readable element description, used to get permission to interact with it",
+          "type": "string"
+        },
+        "target": {
+          "type": "string",
+          "description": "Exact element ref from the page snapshot, or a unique selector"
+        }
+      },
+      "required": [
+        "target"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_select_option",
+    "description": "Select options in a dropdown.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "element": {
+          "description": "Human-readable element description, used to get permission to interact with it",
+          "type": "string"
+        },
+        "target": {
+          "type": "string",
+          "description": "Exact element ref from the page snapshot, or a unique selector"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One or more values to select"
+        }
+      },
+      "required": [
+        "target",
+        "values"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_tabs",
+    "description": "List, open, close, or select browser tabs.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "list",
+            "new",
+            "close",
+            "select"
+          ],
+          "description": "Operation"
+        },
+        "index": {
+          "description": "Tab index for close/select. Close without it closes the current tab.",
+          "type": "number"
+        },
+        "url": {
+          "description": "URL to open in the new tab (new only).",
+          "type": "string"
+        },
+        "isolatedContext": {
+          "description": "Isolated browser context for the new tab (new only). Tabs in the same context share cookies and storage; different contexts are fully isolated. Omitted or \"default\" uses the default context.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "browser_wait_for",
+    "description": "Wait for text to appear or disappear, or for a time to pass. With both text and textGone, waits for whichever happens first.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "time": {
+          "description": "Seconds to wait, at most 30. With text or textGone, acts as their timeout instead of the default action timeout.",
+          "type": "number"
+        },
+        "text": {
+          "description": "Text to wait for",
+          "type": "string"
+        },
+        "textGone": {
+          "description": "Text to wait to disappear",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+]
