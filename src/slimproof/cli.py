@@ -12,6 +12,7 @@ from slimproof.core.audit import audit as run_audit
 from slimproof.core.client import server_from
 from slimproof.core.configs import config_paths
 from slimproof.core.report import to_json, to_table
+from slimproof.server import mcp as mcp_server
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -52,6 +53,12 @@ def server(
     _print_result(asyncio.run(audit_one(name, params)), fmt)
 
 
+@app.command("mcp")
+def run_mcp() -> None:
+    """Run slimproof as an MCP server over stdio (for Claude Code and other clients)."""
+    mcp_server.run()
+
+
 def _print_result(result: AuditResult, fmt: Literal["table", "json"]) -> None:
     """Print `result` as a table or JSON; exit 2 if any server failed."""
     if fmt == "json":
@@ -59,9 +66,14 @@ def _print_result(result: AuditResult, fmt: Literal["table", "json"]) -> None:
     else:
         if result.costs:
             Console().print(to_table(result.costs))
+            for f in result.findings:
+                typer.echo(f"{f.rule} {f.server}/{f.tool}: {f.message}")
+
         for name, msg in result.skipped.items():
             typer.echo(f"{name}: skipped ({msg})", err=True)
+
         for name, msg in result.errors.items():
             typer.echo(f"{name}: failed ({msg})", err=True)
+
     if result.errors:
         raise typer.Exit(2)

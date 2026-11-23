@@ -36,3 +36,9 @@ def test_server_json_includes_rule_findings() -> None:
 
     findings = json.loads(result.stdout)["findings"]
     assert {(f["rule"], f["tool"]) for f in findings} == {("SP006", "search")}
+
+
+def test_server_table_lists_findings() -> None:
+    result = CliRunner().invoke(app, ["server", "--", sys.executable, str(FIXTURE)])
+
+    assert "SP006" in result.stdout
