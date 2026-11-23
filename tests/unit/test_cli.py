@@ -1,4 +1,5 @@
 import json
+import sys
 from pathlib import Path
 
 from typer.testing import CliRunner
@@ -14,3 +15,15 @@ def test_audit_json_reports_broken_server(tmp_path: Path) -> None:
 
     assert result.exit_code == 2
     assert json.loads(result.stdout)["errors"].keys() == {"broken"}
+
+
+FIXTURE = Path(__file__).parent.parent / "fixtures" / "bloated_server.py"
+
+
+def test_server_ranks_stdio_tools() -> None:
+    result = CliRunner().invoke(
+        app, ["server", "--format", "json", "--", sys.executable, str(FIXTURE)]
+    )
+
+    assert result.exit_code == 0, result.output
+    assert [c["tool"] for c in json.loads(result.stdout)["costs"]] == ["search", "ping"]

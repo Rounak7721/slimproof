@@ -56,6 +56,16 @@ def _error_message(e: BaseException, secrets: list[str]) -> str:
     return msg
 
 
+async def audit_one(name: str, server: StdioServerParameters | HttpServer) -> AuditResult:
+    """Audit a single server; a failure becomes an error entry, not an exception."""
+    try:
+        costs = await audit_server(name, server)
+    except Exception as e:
+        return AuditResult(costs=[], errors={name: _error_message(e, _secrets(server))}, skipped={})
+    costs.sort(key=lambda c: c.tokens, reverse=True)
+    return AuditResult(costs=costs, errors={}, skipped={})
+
+
 async def audit(paths: list[Path]) -> AuditResult:
     """Audit every server in `paths`, with costs ranked high -> low."""
     result = AuditResult(costs=[], errors={}, skipped={})
