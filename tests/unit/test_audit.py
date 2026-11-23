@@ -16,7 +16,7 @@ async def test_audit_server_costs_each_tool() -> None:
         """Reply with pong."""
         return "pong"
 
-    costs = await audit_server("fake", server)
+    costs = (await audit_server("fake", server)).costs
 
     assert len(costs) == 1
     assert costs[0].server == "fake"

@@ -1,6 +1,6 @@
 """Measure how many tokens each MCP tool definition costs."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from mcp import StdioServerParameters
@@ -8,6 +8,7 @@ from mcp.server.mcpserver import MCPServer
 
 from slimproof.core.client import HttpServer, list_tools
 from slimproof.core.configs import load_servers
+from slimproof.core.rules import Finding, check
 from slimproof.core.tokens import estimate_tokens, tool_text
 
 
@@ -27,14 +28,16 @@ class AuditResult:
     costs: list[ToolCost]
     errors: dict[str, str]  # server -> why auditing it failed
     skipped: dict[str, str]  # server -> why we deliberately didn't try
+    findings: list[Finding] = field(default_factory=list)
 
 
 async def audit_server(
     name: str, server: StdioServerParameters | MCPServer | HttpServer
-) -> list[ToolCost]:
-    """List `server`'s tools and estimate each tool's token cost."""
+) -> AuditResult:
+    """List `server`'s tools, estimate each tool's token cost and run the bloat rules."""
     tools = await list_tools(server)
-    return [ToolCost(name, t.name, estimate_tokens(tool_text(t))) for t in tools]
+    costs = [ToolCost(name, t.name, estimate_tokens(tool_text(t))) for t in tools]
+    return AuditResult(costs=costs, errors={}, skipped={}, findings=check(name, tools))
 
 
 def _secrets(server: StdioServerParameters | HttpServer) -> list[str]:
@@ -59,11 +62,11 @@ def _error_message(e: BaseException, secrets: list[str]) -> str:
 async def audit_one(name: str, server: StdioServerParameters | HttpServer) -> AuditResult:
     """Audit a single server; a failure becomes an error entry, not an exception."""
     try:
-        costs = await audit_server(name, server)
+        result = await audit_server(name, server)
     except Exception as e:
         return AuditResult(costs=[], errors={name: _error_message(e, _secrets(server))}, skipped={})
-    costs.sort(key=lambda c: c.tokens, reverse=True)
-    return AuditResult(costs=costs, errors={}, skipped={})
+    result.costs.sort(key=lambda c: c.tokens, reverse=True)
+    return result
 
 
 async def audit(paths: list[Path]) -> AuditResult:
@@ -74,7 +77,9 @@ async def audit(paths: list[Path]) -> AuditResult:
         result.skipped.update(skipped)
         for name, server in servers.items():
             try:  # ponytail: one server at a time; run concurrently if audits feel slow
-                result.costs.extend(await audit_server(name, server))
+                one = await audit_server(name, server)
+                result.costs.extend(one.costs)
+                result.findings.extend(one.findings)
             except Exception as e:
                 result.errors[name] = _error_message(e, _secrets(server))
     result.costs.sort(key=lambda c: c.tokens, reverse=True)

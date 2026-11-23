@@ -27,3 +27,12 @@ def test_server_ranks_stdio_tools() -> None:
 
     assert result.exit_code == 0, result.output
     assert [c["tool"] for c in json.loads(result.stdout)["costs"]] == ["search", "ping"]
+
+
+def test_server_json_includes_rule_findings() -> None:
+    result = CliRunner().invoke(
+        app, ["server", "--format", "json", "--", sys.executable, str(FIXTURE)]
+    )
+
+    findings = json.loads(result.stdout)["findings"]
+    assert {(f["rule"], f["tool"]) for f in findings} == {("SP006", "search")}
