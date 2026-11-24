@@ -11,11 +11,14 @@ from slimproof.core.audit import AuditResult, audit_one
 from slimproof.core.audit import audit as run_audit
 from slimproof.core.client import server_from
 from slimproof.core.configs import config_paths
-from slimproof.core.report import over_budget, to_json, to_table
+from slimproof.core.report import over_budget, to_json, to_markdown, to_table
 from slimproof.core.tokens import DEFAULT_RATIO, claude_setup_problem
 from slimproof.server import mcp as mcp_server
 
 app = typer.Typer(no_args_is_help=True)
+
+Format = Literal["table", "json", "markdown"]
+FormatOption = Annotated[Format, typer.Option("--format")]
 
 ExactOption = Annotated[
     bool,
@@ -56,7 +59,7 @@ def audit(
     config: Annotated[
         list[Path] | None, typer.Option(help="Config file(s). Default: auto-detect.")
     ] = None,
-    fmt: Annotated[Literal["table", "json"], typer.Option("--format")] = "table",
+    fmt: FormatOption = "table",
     exact: ExactOption = False,
     ratio: RatioOption = DEFAULT_RATIO,
     budget: BudgetOption = None,
@@ -76,7 +79,7 @@ def audit(
 def server(
     command: Annotated[list[str] | None, typer.Argument(help="Stdio command, after --.")] = None,
     url: Annotated[str | None, typer.Option(help="Streamable HTTP URL.")] = None,
-    fmt: Annotated[Literal["table", "json"], typer.Option("--format")] = "table",
+    fmt: FormatOption = "table",
     exact: ExactOption = False,
     ratio: RatioOption = DEFAULT_RATIO,
     budget: BudgetOption = None,
@@ -100,13 +103,15 @@ def run_mcp() -> None:
 
 def _print_result(
     result: AuditResult,
-    fmt: Literal["table", "json"],
+    fmt: Format,
     budget: float | None = None,
     window: int = 200_000,
 ) -> None:
-    """Print `result` as a table or JSON; exit 2 if any server failed, 1 if over budget."""
+    """Print `result` in `fmt`; exit 2 if any server failed, 1 if over budget."""
     if fmt == "json":
         typer.echo(to_json(result))
+    elif fmt == "markdown":
+        typer.echo(to_markdown(result), nl=False)
     else:
         if result.costs:
             Console().print(to_table(result.costs, result.exact))

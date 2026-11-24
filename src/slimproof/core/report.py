@@ -1,4 +1,4 @@
-"""Format audit results as JSON or a terminal table."""
+"""Format audit results as JSON, Markdown or a terminal table."""
 
 import json
 from dataclasses import asdict
@@ -14,12 +14,51 @@ def to_json(result: AuditResult) -> str:
     return json.dumps(asdict(result), indent=2)
 
 
+def _headings(exact: bool) -> tuple[str, str]:
+    """(title, token column header): the `~` marks an estimate."""
+    if exact:
+        return f"MCP tool token cost (exact, {CLAUDE_MODEL})", "Tokens"
+    return "MCP tool token cost (~ = estimate)", "~Tokens"
+
+
+def to_markdown(result: AuditResult) -> str:
+    """Audit results as Markdown, e.g. for a PR comment or a CI job summary."""
+    title, column = _headings(result.exact)
+    total = sum(c.tokens for c in result.costs)
+    in_descriptions = sum(c.description_tokens for c in result.costs)
+    lines = [
+        f"## {title}",
+        "",
+        f"| Server | Tool | {column} | In descriptions |",
+        "|---|---|--:|--:|",
+        *(
+            f"| {_cell(c.server)} | {_cell(c.tool)} | {c.tokens:,} | "
+            f"{_part(c.description_tokens, c.tokens)} |"
+            for c in result.costs
+        ),
+        f"| | **Total** | **{total:,}** | **{_part(in_descriptions, total)}** |",
+        "",
+        context_share(total),
+    ]
+    sections = [
+        ("Findings", [f"`{f.rule}` {f.server}/{f.tool}: {f.message}" for f in result.findings]),
+        ("Skipped", [f"**{name}**: {msg}" for name, msg in result.skipped.items()]),
+        ("Failed", [f"**{name}**: {msg}" for name, msg in result.errors.items()]),
+    ]
+    for heading, items in sections:
+        if items:
+            lines += ["", f"### {heading}", "", *(f"- {item}" for item in items)]
+    return "\n".join(lines) + "\n"
+
+
+def _cell(text: str) -> str:
+    """`text` made safe inside a Markdown table cell."""
+    return text.replace("|", "\\|")
+
+
 def to_table(costs: list[ToolCost], exact: bool = False) -> Table:
     """Audit results as a rich table, one row per tool, plus a total."""
-    if exact:
-        title, column = f"MCP tool token cost (exact, {CLAUDE_MODEL})", "Tokens"
-    else:
-        title, column = "MCP tool token cost (~ = estimate)", "~Tokens"
+    title, column = _headings(exact)
     total = sum(c.tokens for c in costs)
     in_descriptions = sum(c.description_tokens for c in costs)
     table = Table(title=title, caption=context_share(total))

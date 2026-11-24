@@ -1,7 +1,8 @@
 import json
 
 from slimproof.core.audit import AuditResult, ToolCost
-from slimproof.core.report import context_share, over_budget, to_json, to_table
+from slimproof.core.report import context_share, over_budget, to_json, to_markdown, to_table
+from slimproof.core.rules import Finding
 
 COSTS = [ToolCost("github", "create_issue", 120, 80), ToolCost("github", "ping", 10, 4)]
 
@@ -38,3 +39,21 @@ def test_over_budget_only_when_share_is_above_budget() -> None:
     assert over_budget(20_000, budget=10) is None
     assert over_budget(20_001, budget=10) is not None
     assert over_budget(20_001, budget=10, window=1_000_000) is None
+
+
+def test_to_markdown_has_table_total_and_sections() -> None:
+    findings = [Finding("SP006", "github", "create_issue", "description is 1500 chars")]
+    result = AuditResult(COSTS, {"broken": "not found"}, {}, findings)
+
+    md = to_markdown(result)
+
+    assert "| github | create_issue | 120 | 80 (67%) |" in md
+    assert "| | **Total** | **130** | **84 (65%)** |" in md
+    assert "- `SP006` github/create_issue: description is 1500 chars" in md
+    assert "### Failed\n\n- **broken**: not found" in md
+    assert "### Skipped" not in md
+
+
+def test_to_markdown_escapes_pipes_in_cells() -> None:
+    result = AuditResult([ToolCost("a|b", "t", 1, 0)], {}, {})
+    assert "| a\\|b | t |" in to_markdown(result)
