@@ -14,7 +14,7 @@ SEEN = ("name", "description", "inputSchema")  # the only fields the Claude API 
 
 
 async def main() -> None:
-    servers, _ = load_servers(EVALS / "servers.json")
+    servers, _ = load_servers([EVALS / "servers.json"])
     out = EVALS / "snapshots"
     out.mkdir(exist_ok=True)
     for name, server in servers.items():

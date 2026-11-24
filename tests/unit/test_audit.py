@@ -1,10 +1,14 @@
 import json
+from functools import partial
 from pathlib import Path
 
+import httpx2
 import pytest
 from mcp.server.mcpserver import MCPServer
 
-from slimproof.core.audit import _error_message, audit, audit_server, tool_definitions
+from slimproof.core import audit as audit_module
+from slimproof.core.audit import _error_message, audit, audit_one, audit_server, tool_definitions
+from slimproof.core.client import HttpServer, list_tools
 
 
 @pytest.mark.anyio
@@ -33,6 +37,17 @@ async def test_audit_records_broken_server(tmp_path: Path) -> None:
 
     assert result.costs == []
     assert "broken" in result.errors
+
+
+@pytest.mark.anyio
+async def test_audit_one_skips_server_that_needs_login(monkeypatch: pytest.MonkeyPatch) -> None:
+    unauthorized = httpx2.MockTransport(lambda request: httpx2.Response(401))
+    monkeypatch.setattr(audit_module, "list_tools", partial(list_tools, transport=unauthorized))
+
+    result = await audit_one("remote", HttpServer("https://example.com/mcp"))
+
+    assert result.errors == {}
+    assert "needs OAuth login" in result.skipped["remote"]
 
 
 def test_error_message_masks_secrets() -> None:

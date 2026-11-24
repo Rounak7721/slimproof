@@ -22,6 +22,19 @@ class HttpServer:
     headers: dict[str, str] = field(default_factory=dict)
 
 
+class NeedsLogin(Exception):
+    """An HTTP server answered 401: it wants an OAuth login, which slimproof can't do yet."""
+
+    def __init__(self) -> None:
+        super().__init__("needs OAuth login; add an Authorization header in the config to audit it")
+
+
+async def _raise_on_401(response: httpx2.Response) -> None:
+    """httpx response hook: the MCP SDK hides HTTP statuses, so catch 401 here."""
+    if response.status_code == 401:
+        raise NeedsLogin()
+
+
 def server_from(
     command: list[str] | None, url: str | None
 ) -> tuple[str, StdioServerParameters | HttpServer]:
@@ -44,7 +57,12 @@ async def list_tools(
     """
     if not isinstance(server, HttpServer):
         return await _all_tools(Client(server))
-    async with httpx2.AsyncClient(headers=server.headers, transport=transport, timeout=30) as http:
+    async with httpx2.AsyncClient(
+        headers=server.headers,
+        transport=transport,
+        timeout=30,
+        event_hooks={"response": [_raise_on_401]},
+    ) as http:
         return await _all_tools(Client(streamable_http_client(server.url, http_client=http)))
 
 

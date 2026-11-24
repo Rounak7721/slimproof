@@ -7,7 +7,7 @@ from typing import Any
 from mcp import StdioServerParameters
 from mcp.server.mcpserver import MCPServer
 
-from slimproof.core.client import HttpServer, list_tools
+from slimproof.core.client import HttpServer, NeedsLogin, list_tools
 from slimproof.core.configs import load_servers
 from slimproof.core.rules import Finding, check
 from slimproof.core.tokens import estimate_tokens, tool_text
@@ -49,11 +49,17 @@ def _secrets(server: StdioServerParameters | HttpServer) -> list[str]:
     return [word for v in values for word in v.split()]
 
 
-def _error_message(e: BaseException, secrets: list[str]) -> str:
-    """Readable error text: unwrap async exception groups, then mask secret values."""
+def _root(e: BaseException) -> BaseException:
+    """The first real error inside nested async exception groups."""
     while sub := getattr(e, "exceptions", None):
         e = sub[0]
-    msg = f"{type(e).__name__}: {e}"
+    return e
+
+
+def _error_message(e: BaseException, secrets: list[str]) -> str:
+    """Readable error text: unwrap async exception groups, then mask secret values."""
+    e = _root(e)
+    msg = str(e) if isinstance(e, NeedsLogin) else f"{type(e).__name__}: {e}"
     for secret in secrets:
         if len(secret) >= 4:  # ponytail: skip short values like "1" so messages stay readable
             msg = msg.replace(secret, "***")
@@ -61,11 +67,14 @@ def _error_message(e: BaseException, secrets: list[str]) -> str:
 
 
 async def audit_one(name: str, server: StdioServerParameters | HttpServer) -> AuditResult:
-    """Audit a single server; a failure becomes an error entry, not an exception."""
+    """Audit a single server; a failure becomes an error (or skipped) entry, not an exception."""
     try:
         result = await audit_server(name, server)
     except Exception as e:
-        return AuditResult(costs=[], errors={name: _error_message(e, _secrets(server))}, skipped={})
+        msg = {name: _error_message(e, _secrets(server))}
+        if isinstance(_root(e), NeedsLogin):
+            return AuditResult(costs=[], errors={}, skipped=msg)
+        return AuditResult(costs=[], errors=msg, skipped={})
     result.costs.sort(key=lambda c: c.tokens, reverse=True)
     return result
 
@@ -82,15 +91,14 @@ async def tool_definitions(server: StdioServerParameters | HttpServer) -> list[d
 async def audit(paths: list[Path]) -> AuditResult:
     """Audit every server in `paths`, with costs ranked high -> low."""
     result = AuditResult(costs=[], errors={}, skipped={})
-    for path in paths:
-        servers, skipped = load_servers(path)
-        result.skipped.update(skipped)
-        for name, server in servers.items():
-            try:  # ponytail: one server at a time; run concurrently if audits feel slow
-                one = await audit_server(name, server)
-                result.costs.extend(one.costs)
-                result.findings.extend(one.findings)
-            except Exception as e:
-                result.errors[name] = _error_message(e, _secrets(server))
+    servers, skipped = load_servers(paths)
+    result.skipped.update(skipped)
+    for name, server in servers.items():
+        # ponytail: one server at a time; run concurrently if audits feel slow
+        one = await audit_one(name, server)
+        result.costs.extend(one.costs)
+        result.findings.extend(one.findings)
+        result.errors.update(one.errors)
+        result.skipped.update(one.skipped)
     result.costs.sort(key=lambda c: c.tokens, reverse=True)
     return result

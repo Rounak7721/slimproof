@@ -22,7 +22,7 @@ def test_load_servers_reads_stdio_and_http(tmp_path: Path, monkeypatch: pytest.M
     }
     config.write_text(json.dumps({"mcpServers": servers_json}), encoding="utf-8")
 
-    servers, skipped = load_servers(config)
+    servers, skipped = load_servers([config])
 
     assert servers["fs"] == StdioServerParameters(
         command="npx", args=["-y", "server-filesystem"], env={"TOKEN": "x"}
@@ -56,9 +56,56 @@ def test_load_servers_reads_local_scope_for_cwd(tmp_path: Path) -> None:
         )
     )
 
-    servers, _ = load_servers(config, cwd=Path("/work/app"))
+    servers, _ = load_servers([config], cwd=Path("/work/app"))
 
     assert servers.keys() == {"user", "local"}
+
+
+def test_load_servers_expands_vars_everywhere(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("SP_TEST_DIR", "/data")
+    monkeypatch.delenv("SP_TEST_MISSING", raising=False)
+    config = tmp_path / ".mcp.json"
+    entry = {
+        "command": "${SP_TEST_DIR}/bin/server",
+        "args": ["--port", "${SP_TEST_MISSING:-8080}", "${SP_TEST_MISSING}", "$SP_TEST_DIR"],
+        "env": {"ROOT": "${SP_TEST_DIR}"},
+    }
+    config.write_text(json.dumps({"mcpServers": {"s": entry}}), encoding="utf-8")
+
+    servers, _ = load_servers([config])
+
+    assert servers["s"] == StdioServerParameters(
+        command="/data/bin/server",
+        args=["--port", "8080", "${SP_TEST_MISSING}", "$SP_TEST_DIR"],
+        env={"ROOT": "/data"},
+    )
+
+
+def test_load_servers_uses_claude_code_scope_order(tmp_path: Path) -> None:
+    project = tmp_path / ".mcp.json"
+    user = tmp_path / ".claude.json"
+    project.write_text(
+        json.dumps({"mcpServers": {"a": {"command": "project"}, "b": {"command": "project"}}}),
+        encoding="utf-8",
+    )
+    user.write_text(
+        json.dumps(
+            {
+                "mcpServers": {"a": {"command": "user"}, "c": {"command": "user"}},
+                "projects": {"/work/app": {"mcpServers": {"b": {"command": "local"}}}},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    servers, _ = load_servers([project, user], cwd=Path("/work/app"))
+
+    commands = {
+        name: s.command for name, s in servers.items() if isinstance(s, StdioServerParameters)
+    }
+    assert commands == {"a": "project", "b": "local", "c": "user"}
 
 
 def test_find_server_by_name(tmp_path: Path) -> None:
