@@ -85,3 +85,13 @@ def test_ratio_changes_the_estimate() -> None:
         return sum(c["tokens"] for c in json.loads(result.stdout)["costs"])
 
     assert total("2") > total("4")
+
+
+def test_budget_exits_1_when_over() -> None:
+    def run(*options: str) -> int:
+        args = ["server", *options, "--", sys.executable, str(FIXTURE)]
+        return CliRunner().invoke(app, args).exit_code
+
+    assert run("--budget", "0.1") == 1
+    assert run("--budget", "1") == 0
+    assert run("--budget", "0.1", "--window", "1000000") == 0

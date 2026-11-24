@@ -31,6 +31,17 @@ def to_table(costs: list[ToolCost], exact: bool = False) -> Table:
     return table
 
 
+def over_budget(total: int, budget: float, window: int = 200_000) -> str | None:
+    """Why `total` tool tokens break a `budget` (% of `window`), or None if they fit."""
+    share = 100 * total / window
+    if share <= budget:
+        return None
+    return (
+        f"Over budget: tool definitions use {share:.1f}% of a {window:,}-token context window "
+        f"(budget {budget:g}%)."
+    )
+
+
 def context_share(total: int) -> str:
     """`total` tool tokens as a share of Claude's 200K and 1M context windows."""
     return (

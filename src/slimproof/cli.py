@@ -11,7 +11,7 @@ from slimproof.core.audit import AuditResult, audit_one
 from slimproof.core.audit import audit as run_audit
 from slimproof.core.client import server_from
 from slimproof.core.configs import config_paths
-from slimproof.core.report import to_json, to_table
+from slimproof.core.report import over_budget, to_json, to_table
 from slimproof.core.tokens import DEFAULT_RATIO, claude_setup_problem
 from slimproof.server import mcp as mcp_server
 
@@ -27,6 +27,15 @@ ExactOption = Annotated[
 RatioOption = Annotated[
     float,
     typer.Option(min=0.5, help="Characters per token for the estimate. Lower = higher counts."),
+]
+
+BudgetOption = Annotated[
+    float | None,
+    typer.Option(min=0, help="Exit 1 if tools use more than this % of the context window."),
+]
+
+WindowOption = Annotated[
+    int, typer.Option(min=1, help="Context window size in tokens for --budget, e.g. 1000000.")
 ]
 
 
@@ -50,6 +59,8 @@ def audit(
     fmt: Annotated[Literal["table", "json"], typer.Option("--format")] = "table",
     exact: ExactOption = False,
     ratio: RatioOption = DEFAULT_RATIO,
+    budget: BudgetOption = None,
+    window: WindowOption = 200_000,
 ) -> None:
     """Rank every tool in your MCP configs by token cost."""
     _check_exact(exact)
@@ -58,7 +69,7 @@ def audit(
         typer.echo("No MCP config files found. Pass one with --config.", err=True)
         raise typer.Exit(2)
 
-    _print_result(asyncio.run(run_audit(paths, exact, ratio)), fmt)
+    _print_result(asyncio.run(run_audit(paths, exact, ratio)), fmt, budget, window)
 
 
 @app.command()
@@ -68,6 +79,8 @@ def server(
     fmt: Annotated[Literal["table", "json"], typer.Option("--format")] = "table",
     exact: ExactOption = False,
     ratio: RatioOption = DEFAULT_RATIO,
+    budget: BudgetOption = None,
+    window: WindowOption = 200_000,
 ) -> None:
     """Audit one server without a config: `server -- CMD ARGS...` or `server --url URL`."""
     _check_exact(exact)
@@ -76,7 +89,7 @@ def server(
     except ValueError as e:
         typer.echo(str(e), err=True)
         raise typer.Exit(2) from None
-    _print_result(asyncio.run(audit_one(name, params, exact, ratio)), fmt)
+    _print_result(asyncio.run(audit_one(name, params, exact, ratio)), fmt, budget, window)
 
 
 @app.command("mcp")
@@ -85,8 +98,13 @@ def run_mcp() -> None:
     mcp_server.run()
 
 
-def _print_result(result: AuditResult, fmt: Literal["table", "json"]) -> None:
-    """Print `result` as a table or JSON; exit 2 if any server failed."""
+def _print_result(
+    result: AuditResult,
+    fmt: Literal["table", "json"],
+    budget: float | None = None,
+    window: int = 200_000,
+) -> None:
+    """Print `result` as a table or JSON; exit 2 if any server failed, 1 if over budget."""
     if fmt == "json":
         typer.echo(to_json(result))
     else:
@@ -103,3 +121,7 @@ def _print_result(result: AuditResult, fmt: Literal["table", "json"]) -> None:
 
     if result.errors:
         raise typer.Exit(2)
+    total = sum(c.tokens for c in result.costs)
+    if budget is not None and (problem := over_budget(total, budget, window)):
+        typer.echo(problem, err=True)
+        raise typer.Exit(1)
