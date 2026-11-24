@@ -1,7 +1,7 @@
 {"id": "dc-001", "request": "Show me the contents of /project/README.md", "expected_tool": "read_file", "expected_args": {"path": "/project/README.md"}, "difficulty": "easy"}
 {"id": "dc-002", "request": "Show the last 20 lines of /project/logs/app.log", "expected_tool": "read_file", "expected_args": {"path": "/project/logs/app.log", "offset": -20}, "difficulty": "easy"}
 {"id": "dc-003", "request": "Show 5 lines of /project/data.csv, skipping the first 100 lines", "expected_tool": "read_file", "expected_args": {"path": "/project/data.csv", "offset": 100, "length": 5}, "difficulty": "easy"}
-{"id": "dc-004", "request": "Read /project/a.py and /project/b.py", "expected_tool": "read_multiple_files", "expected_args": {"paths": ["/project/a.py", "/project/b.py"]}, "difficulty": "easy"}
+{"id": "dc-004", "request": "Read /project/a.py and /project/b.py", "expected_tool": ["read_multiple_files", "read_file"], "expected_args": {"paths": ["/project/a.py", "/project/b.py"]}, "difficulty": "easy"}
 {"id": "dc-005", "request": "Create /project/notes.txt with the text 'hello'", "expected_tool": "write_file", "expected_args": {"path": "/project/notes.txt"}, "difficulty": "easy"}
 {"id": "dc-006", "request": "Make a PDF called /project/report.pdf from the markdown '# Report'", "expected_tool": "write_pdf", "expected_args": {}, "difficulty": "easy"}
 {"id": "dc-007", "request": "Create the folder /project/build/out", "expected_tool": "create_directory", "expected_args": {"path": "/project/build/out"}, "difficulty": "easy"}

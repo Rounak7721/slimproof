@@ -5,11 +5,11 @@
 | chrome-devtools | original | 12,048 | 100% | 100% | 0% | $0.111 |
 | chrome-devtools | slim | 10,671 | 100% | 100% | 0% | $0.106 |
 | chrome-devtools | strip-all | 6,083 | 97% | 96% | 0% | $0.081 |
-| desktop-commander | original | 16,047 | 97% | 96% | 0% | $0.126 |
+| desktop-commander | original | 16,047 | 100% | 100% | 0% | $0.126 |
 | desktop-commander | slim | 7,398 | 100% | 100% | 0% | $0.079 |
 | desktop-commander | strip-all | 3,930 | 97% | 96% | 0% | $0.062 |
-| filesystem | original | 4,961 | 93% | 93% | 0% | $0.066 |
-| filesystem | slim | 4,136 | 90% | 89% | 0% | $0.060 |
+| filesystem | original | 4,961 | 97% | 96% | 0% | $0.066 |
+| filesystem | slim | 4,136 | 97% | 96% | 0% | $0.060 |
 | filesystem | strip-all | 2,046 | 100% | 96% | 0% | $0.050 |
 | github | original | 19,414 | 100% | 100% | 0% | $0.162 |
 | github | slim | 17,082 | 100% | 100% | 0% | $0.150 |

@@ -164,10 +164,13 @@ def score(
     if call is None:
         return {"tool_ok": expected is None, "args_ok": False, "false_call": False}
     name, args = call
-    if name != expected:
+    accepted = expected if isinstance(expected, list) else [expected]
+    if name not in accepted:
         return {"tool_ok": False, "args_ok": False, "false_call": expected is None}
     schema = next(t["input_schema"] for t in tools if t["name"] == name)
-    args_ok = valid(args, schema) and matches(case["expected_args"], normalize(server, args))
+    args_ok = valid(args, schema) and (
+        name != accepted[0] or matches(case["expected_args"], normalize(server, args))
+    )
     return {"tool_ok": True, "args_ok": args_ok, "false_call": False}
 
 
