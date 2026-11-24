@@ -2,9 +2,11 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from slimproof.cli import app
+from slimproof.core import audit as audit_module
 
 
 def test_audit_json_reports_broken_server(tmp_path: Path) -> None:
@@ -50,3 +52,25 @@ def test_cli_import_keeps_logging_quiet() -> None:
     import slimproof.cli  # noqa: F401  (importing it is the point)
 
     assert logging.getLogger().level >= logging.WARNING
+
+
+def test_exact_without_api_key_exits_with_hint(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+
+    result = CliRunner().invoke(app, ["server", "--exact", "--", sys.executable, str(FIXTURE)])
+
+    assert result.exit_code == 2
+    assert "ANTHROPIC_API_KEY" in result.output
+
+
+def test_exact_uses_claude_counts(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "fake")
+    monkeypatch.setattr(audit_module, "count_claude_tokens", lambda tools: [7] * len(tools))
+
+    result = CliRunner().invoke(
+        app, ["server", "--exact", "--format", "json", "--", sys.executable, str(FIXTURE)]
+    )
+
+    data = json.loads(result.stdout)
+    assert data["exact"] is True
+    assert {c["tokens"] for c in data["costs"]} == {7}

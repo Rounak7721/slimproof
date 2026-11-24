@@ -10,7 +10,7 @@ from mcp.server.mcpserver import MCPServer
 from slimproof.core.client import HttpServer, NeedsLogin, list_tools
 from slimproof.core.configs import load_servers
 from slimproof.core.rules import Finding, check
-from slimproof.core.tokens import estimate_tokens, tool_text
+from slimproof.core.tokens import count_claude_tokens, estimate_tokens, tool_text
 
 
 @dataclass(frozen=True)
@@ -30,15 +30,23 @@ class AuditResult:
     errors: dict[str, str]  # server -> why auditing it failed
     skipped: dict[str, str]  # server -> why we deliberately didn't try
     findings: list[Finding] = field(default_factory=list)
+    exact: bool = False  # True: Claude count_tokens API; False: chars / ratio estimate
 
 
 async def audit_server(
-    name: str, server: StdioServerParameters | MCPServer | HttpServer
+    name: str, server: StdioServerParameters | MCPServer | HttpServer, exact: bool = False
 ) -> AuditResult:
-    """List `server`'s tools, estimate each tool's token cost and run the bloat rules."""
+    """List `server`'s tools, count each tool's tokens and run the bloat rules.
+
+    `exact` counts with Claude's count_tokens API (needs ANTHROPIC_API_KEY); else estimates.
+    """
     tools = await list_tools(server)
-    costs = [ToolCost(name, t.name, estimate_tokens(tool_text(t))) for t in tools]
-    return AuditResult(costs=costs, errors={}, skipped={}, findings=check(name, tools))
+    if exact:
+        tokens = count_claude_tokens(tools)  # ponytail: sync calls; fine for the CLI
+    else:
+        tokens = [estimate_tokens(tool_text(t)) for t in tools]
+    costs = [ToolCost(name, t.name, n) for t, n in zip(tools, tokens, strict=True)]
+    return AuditResult(costs, errors={}, skipped={}, findings=check(name, tools), exact=exact)
 
 
 def _secrets(server: StdioServerParameters | HttpServer) -> list[str]:
@@ -66,15 +74,17 @@ def _error_message(e: BaseException, secrets: list[str]) -> str:
     return msg
 
 
-async def audit_one(name: str, server: StdioServerParameters | HttpServer) -> AuditResult:
+async def audit_one(
+    name: str, server: StdioServerParameters | HttpServer, exact: bool = False
+) -> AuditResult:
     """Audit a single server; a failure becomes an error (or skipped) entry, not an exception."""
     try:
-        result = await audit_server(name, server)
+        result = await audit_server(name, server, exact)
     except Exception as e:
         msg = {name: _error_message(e, _secrets(server))}
         if isinstance(_root(e), NeedsLogin):
-            return AuditResult(costs=[], errors={}, skipped=msg)
-        return AuditResult(costs=[], errors=msg, skipped={})
+            return AuditResult(costs=[], errors={}, skipped=msg, exact=exact)
+        return AuditResult(costs=[], errors=msg, skipped={}, exact=exact)
     result.costs.sort(key=lambda c: c.tokens, reverse=True)
     return result
 
@@ -88,14 +98,14 @@ async def tool_definitions(server: StdioServerParameters | HttpServer) -> list[d
     return [t.model_dump(mode="json", by_alias=True, exclude_none=True) for t in tools]
 
 
-async def audit(paths: list[Path]) -> AuditResult:
+async def audit(paths: list[Path], exact: bool = False) -> AuditResult:
     """Audit every server in `paths`, with costs ranked high -> low."""
-    result = AuditResult(costs=[], errors={}, skipped={})
+    result = AuditResult(costs=[], errors={}, skipped={}, exact=exact)
     servers, skipped = load_servers(paths)
     result.skipped.update(skipped)
     for name, server in servers.items():
         # ponytail: one server at a time; run concurrently if audits feel slow
-        one = await audit_one(name, server)
+        one = await audit_one(name, server, exact)
         result.costs.extend(one.costs)
         result.findings.extend(one.findings)
         result.errors.update(one.errors)

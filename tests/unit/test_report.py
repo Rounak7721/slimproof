@@ -16,3 +16,8 @@ def test_to_json_round_trips() -> None:
 
 def test_to_table_has_row_per_tool_plus_total() -> None:
     assert to_table(COSTS).row_count == 3
+
+
+def test_to_table_drops_tilde_when_exact() -> None:
+    assert to_table(COSTS).columns[2].header == "~Tokens"
+    assert to_table(COSTS, exact=True).columns[2].header == "Tokens"

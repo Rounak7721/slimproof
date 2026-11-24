@@ -12,9 +12,24 @@ from slimproof.core.audit import audit as run_audit
 from slimproof.core.client import server_from
 from slimproof.core.configs import config_paths
 from slimproof.core.report import to_json, to_table
+from slimproof.core.tokens import claude_setup_problem
 from slimproof.server import mcp as mcp_server
 
 app = typer.Typer(no_args_is_help=True)
+
+ExactOption = Annotated[
+    bool,
+    typer.Option(
+        "--exact", help="Exact Claude token counts via the free count_tokens API (needs API key)."
+    ),
+]
+
+
+def _check_exact(exact: bool) -> None:
+    """Exit 2 with a clear message if --exact can't run on this machine."""
+    if exact and (problem := claude_setup_problem()):
+        typer.echo(problem, err=True)
+        raise typer.Exit(2)
 
 
 @app.callback()
@@ -28,14 +43,16 @@ def audit(
         list[Path] | None, typer.Option(help="Config file(s). Default: auto-detect.")
     ] = None,
     fmt: Annotated[Literal["table", "json"], typer.Option("--format")] = "table",
+    exact: ExactOption = False,
 ) -> None:
     """Rank every tool in your MCP configs by token cost."""
+    _check_exact(exact)
     paths = config or config_paths(Path.cwd())
     if not paths:
         typer.echo("No MCP config files found. Pass one with --config.", err=True)
         raise typer.Exit(2)
 
-    _print_result(asyncio.run(run_audit(paths)), fmt)
+    _print_result(asyncio.run(run_audit(paths, exact)), fmt)
 
 
 @app.command()
@@ -43,14 +60,16 @@ def server(
     command: Annotated[list[str] | None, typer.Argument(help="Stdio command, after --.")] = None,
     url: Annotated[str | None, typer.Option(help="Streamable HTTP URL.")] = None,
     fmt: Annotated[Literal["table", "json"], typer.Option("--format")] = "table",
+    exact: ExactOption = False,
 ) -> None:
     """Audit one server without a config: `server -- CMD ARGS...` or `server --url URL`."""
+    _check_exact(exact)
     try:
         name, params = server_from(command, url)
     except ValueError as e:
         typer.echo(str(e), err=True)
         raise typer.Exit(2) from None
-    _print_result(asyncio.run(audit_one(name, params)), fmt)
+    _print_result(asyncio.run(audit_one(name, params, exact)), fmt)
 
 
 @app.command("mcp")
@@ -65,7 +84,7 @@ def _print_result(result: AuditResult, fmt: Literal["table", "json"]) -> None:
         typer.echo(to_json(result))
     else:
         if result.costs:
-            Console().print(to_table(result.costs))
+            Console().print(to_table(result.costs, result.exact))
             for f in result.findings:
                 typer.echo(f"{f.rule} {f.server}/{f.tool}: {f.message}")
 
