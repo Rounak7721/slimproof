@@ -1,0 +1,30 @@
+{"id": "dc-001", "request": "Show me the contents of /project/README.md", "expected_tool": "read_file", "expected_args": {"path": "/project/README.md"}, "difficulty": "easy"}
+{"id": "dc-002", "request": "Show the last 20 lines of /project/logs/app.log", "expected_tool": "read_file", "expected_args": {"path": "/project/logs/app.log", "offset": -20}, "difficulty": "easy"}
+{"id": "dc-003", "request": "Read lines 100 to 104 of /project/data.csv", "expected_tool": "read_file", "expected_args": {"path": "/project/data.csv", "offset": 100, "length": 5}, "difficulty": "easy"}
+{"id": "dc-004", "request": "Read /project/a.py and /project/b.py", "expected_tool": "read_multiple_files", "expected_args": {"paths": ["/project/a.py", "/project/b.py"]}, "difficulty": "easy"}
+{"id": "dc-005", "request": "Create /project/notes.txt with the text 'hello'", "expected_tool": "write_file", "expected_args": {"path": "/project/notes.txt"}, "difficulty": "easy"}
+{"id": "dc-006", "request": "Make a PDF called /project/report.pdf from the markdown '# Report'", "expected_tool": "write_pdf", "expected_args": {}, "difficulty": "easy"}
+{"id": "dc-007", "request": "Create the folder /project/build/out", "expected_tool": "create_directory", "expected_args": {"path": "/project/build/out"}, "difficulty": "easy"}
+{"id": "dc-008", "request": "What's in /project/src?", "expected_tool": "list_directory", "expected_args": {"path": "/project/src"}, "difficulty": "easy"}
+{"id": "dc-009", "request": "Rename /project/old.txt to /project/new.txt", "expected_tool": "move_file", "expected_args": {"source": "/project/old.txt", "destination": "/project/new.txt"}, "difficulty": "easy"}
+{"id": "dc-010", "request": "Find every package.json file under /project", "expected_tool": "start_search", "expected_args": {"path": "/project"}, "difficulty": "easy"}
+{"id": "dc-011", "request": "Get more results from search search_1", "expected_tool": "get_more_search_results", "expected_args": {"sessionId": "search_1"}, "difficulty": "easy"}
+{"id": "dc-012", "request": "Stop search search_1", "expected_tool": "stop_search", "expected_args": {"sessionId": "search_1"}, "difficulty": "easy"}
+{"id": "dc-013", "request": "Which searches are still running?", "expected_tool": "list_searches", "expected_args": {}, "difficulty": "easy"}
+{"id": "dc-014", "request": "In /project/config.py, replace DEBUG = True with DEBUG = False", "expected_tool": "edit_block", "expected_args": {"file_path": "/project/config.py"}, "difficulty": "easy"}
+{"id": "dc-015", "request": "Run npm test in /project", "expected_tool": "start_process", "expected_args": {}, "difficulty": "easy"}
+{"id": "dc-016", "request": "In the Python REPL that's running, run print(2 + 2)", "expected_tool": "interact_with_process", "expected_args": {"pid": 4242}, "difficulty": "easy"}
+{"id": "dc-017", "request": "Show me the new output from process 4242", "expected_tool": "read_process_output", "expected_args": {"pid": 4242}, "difficulty": "easy"}
+{"id": "dc-018", "request": "Which terminal sessions are active?", "expected_tool": "list_sessions", "expected_args": {}, "difficulty": "easy"}
+{"id": "dc-019", "request": "Kill process 9876", "expected_tool": "kill_process", "expected_args": {"pid": 9876}, "difficulty": "easy"}
+{"id": "dc-020", "request": "Show me the Desktop Commander configuration", "expected_tool": "get_config", "expected_args": {}, "difficulty": "easy"}
+{"id": "dc-021", "request": "Set the file read line limit to 2000", "expected_tool": "set_config_value", "expected_args": {"key": "fileReadLineLimit", "value": 2000}, "difficulty": "easy"}
+{"id": "dc-022", "request": "Fetch https://example.com/robots.txt", "expected_tool": "read_file", "expected_args": {"path": "https://example.com/robots.txt", "isUrl": true}, "difficulty": "confusable"}
+{"id": "dc-023", "request": "Add the line 'done' to the end of /project/log.txt", "expected_tool": "write_file", "expected_args": {"path": "/project/log.txt", "mode": "append"}, "difficulty": "confusable"}
+{"id": "dc-024", "request": "Show only what's directly inside /project, no subfolders", "expected_tool": "list_directory", "expected_args": {"path": "/project", "depth": 1}, "difficulty": "confusable"}
+{"id": "dc-025", "request": "Find every TODO comment in the code under /project", "expected_tool": "start_search", "expected_args": {"path": "/project", "searchType": "content"}, "difficulty": "confusable"}
+{"id": "dc-026", "request": "How many lines does /project/data.csv have?", "expected_tool": "get_file_info", "expected_args": {"path": "/project/data.csv"}, "difficulty": "confusable"}
+{"id": "dc-027", "request": "Which processes are using the most CPU right now?", "expected_tool": "list_processes", "expected_args": {}, "difficulty": "confusable"}
+{"id": "dc-028", "request": "What's the difference between a process and a thread?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}
+{"id": "dc-029", "request": "Write a bash one-liner that counts the lines in a file", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}
+{"id": "dc-030", "request": "What does the chmod command do?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}

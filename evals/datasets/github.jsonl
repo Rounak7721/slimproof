@@ -1,0 +1,30 @@
+{"id": "gh-001", "request": "Show me issue #42", "expected_tool": "issue_read", "expected_args": {"owner": "acme", "repo": "webapp", "issue_number": 42, "method": "get"}, "difficulty": "easy"}
+{"id": "gh-002", "request": "Show the comments on issue #42", "expected_tool": "issue_read", "expected_args": {"owner": "acme", "repo": "webapp", "issue_number": 42, "method": "get_comments"}, "difficulty": "easy"}
+{"id": "gh-003", "request": "Open a new issue titled 'Login button broken'", "expected_tool": "issue_write", "expected_args": {"owner": "acme", "repo": "webapp", "method": "create", "title": "Login button broken"}, "difficulty": "easy"}
+{"id": "gh-004", "request": "Close issue #17", "expected_tool": "issue_write", "expected_args": {"owner": "acme", "repo": "webapp", "method": "update", "issue_number": 17, "state": "closed"}, "difficulty": "easy"}
+{"id": "gh-005", "request": "List the open issues", "expected_tool": "list_issues", "expected_args": {"owner": "acme", "repo": "webapp", "state": "OPEN"}, "difficulty": "easy"}
+{"id": "gh-006", "request": "List the open pull requests", "expected_tool": "list_pull_requests", "expected_args": {"owner": "acme", "repo": "webapp", "state": "open"}, "difficulty": "easy"}
+{"id": "gh-007", "request": "Show me the diff of PR #8", "expected_tool": "pull_request_read", "expected_args": {"owner": "acme", "repo": "webapp", "pullNumber": 8, "method": "get_diff"}, "difficulty": "easy"}
+{"id": "gh-008", "request": "Which files does PR #8 change?", "expected_tool": "pull_request_read", "expected_args": {"owner": "acme", "repo": "webapp", "pullNumber": 8, "method": "get_files"}, "difficulty": "easy"}
+{"id": "gh-009", "request": "Create a branch feature/login from main", "expected_tool": "create_branch", "expected_args": {"owner": "acme", "repo": "webapp", "branch": "feature/login", "from_branch": "main"}, "difficulty": "easy"}
+{"id": "gh-010", "request": "Open a pull request from feature/login into main titled 'Add login'", "expected_tool": "create_pull_request", "expected_args": {"owner": "acme", "repo": "webapp", "head": "feature/login", "base": "main", "title": "Add login"}, "difficulty": "easy"}
+{"id": "gh-011", "request": "Squash-merge PR #8", "expected_tool": "merge_pull_request", "expected_args": {"owner": "acme", "repo": "webapp", "pullNumber": 8, "merge_method": "squash"}, "difficulty": "easy"}
+{"id": "gh-012", "request": "Show me the README.md of the repo", "expected_tool": "get_file_contents", "expected_args": {"owner": "acme", "repo": "webapp", "path": "README.md"}, "difficulty": "easy"}
+{"id": "gh-013", "request": "What's the latest release?", "expected_tool": "get_latest_release", "expected_args": {"owner": "acme", "repo": "webapp"}, "difficulty": "easy"}
+{"id": "gh-014", "request": "Show the recent commits on main", "expected_tool": "list_commits", "expected_args": {"owner": "acme", "repo": "webapp"}, "difficulty": "easy"}
+{"id": "gh-015", "request": "Show the details of commit abc1234", "expected_tool": "get_commit", "expected_args": {"owner": "acme", "repo": "webapp", "sha": "abc1234"}, "difficulty": "easy"}
+{"id": "gh-016", "request": "Fork facebook/react", "expected_tool": "fork_repository", "expected_args": {"owner": "facebook", "repo": "react"}, "difficulty": "easy"}
+{"id": "gh-017", "request": "Create a new private repository called test-sandbox", "expected_tool": "create_repository", "expected_args": {"name": "test-sandbox", "private": true}, "difficulty": "easy"}
+{"id": "gh-018", "request": "Comment 'Fixed in #50' on issue #42", "expected_tool": "add_issue_comment", "expected_args": {"owner": "acme", "repo": "webapp", "issue_number": 42, "body": "Fixed in #50"}, "difficulty": "easy"}
+{"id": "gh-019", "request": "Approve PR #8", "expected_tool": "pull_request_review_write", "expected_args": {"owner": "acme", "repo": "webapp", "pullNumber": 8, "method": "create", "event": "APPROVE"}, "difficulty": "easy"}
+{"id": "gh-020", "request": "Ask Copilot to review PR #8", "expected_tool": "request_copilot_review", "expected_args": {"owner": "acme", "repo": "webapp", "pullNumber": 8}, "difficulty": "easy"}
+{"id": "gh-021", "request": "Show my GitHub profile", "expected_tool": "get_me", "expected_args": {}, "difficulty": "easy"}
+{"id": "gh-022", "request": "Find the pull requests opened by alice in this repo", "expected_tool": "search_pull_requests", "expected_args": {}, "difficulty": "confusable"}
+{"id": "gh-023", "request": "Find issues about login failing after a password reset", "expected_tool": "search_issues", "expected_args": {}, "difficulty": "confusable"}
+{"id": "gh-024", "request": "Where is the function parseConfig defined in this repo?", "expected_tool": "search_code", "expected_args": {}, "difficulty": "confusable"}
+{"id": "gh-025", "request": "Find popular Rust web frameworks on GitHub", "expected_tool": "search_repositories", "expected_args": {}, "difficulty": "confusable"}
+{"id": "gh-026", "request": "Add a thumbs-up reaction to issue #42", "expected_tool": "add_issue_comment", "expected_args": {"owner": "acme", "repo": "webapp", "issue_number": 42, "reaction": "+1"}, "difficulty": "confusable"}
+{"id": "gh-027", "request": "Change the title of PR #8 to 'Add OAuth login'", "expected_tool": "update_pull_request", "expected_args": {"owner": "acme", "repo": "webapp", "pullNumber": 8, "title": "Add OAuth login"}, "difficulty": "confusable"}
+{"id": "gh-028", "request": "What's the difference between git merge and git rebase?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}
+{"id": "gh-029", "request": "How do I write a good commit message?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}
+{"id": "gh-030", "request": "Explain what a pull request is", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}

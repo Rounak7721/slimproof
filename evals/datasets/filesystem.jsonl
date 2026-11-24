@@ -1,0 +1,30 @@
+{"id": "fs-001", "request": "Show me the contents of README.md", "expected_tool": "read_text_file", "expected_args": {"path": "/project/README.md"}, "difficulty": "easy"}
+{"id": "fs-002", "request": "Show me the first 20 lines of src/main.py", "expected_tool": "read_text_file", "expected_args": {"path": "/project/src/main.py", "head": 20}, "difficulty": "easy"}
+{"id": "fs-003", "request": "What are the last 50 lines of logs/app.log?", "expected_tool": "read_text_file", "expected_args": {"path": "/project/logs/app.log", "tail": 50}, "difficulty": "easy"}
+{"id": "fs-004", "request": "Create a new file notes/todo.txt containing 'buy milk'", "expected_tool": "write_file", "expected_args": {"path": "/project/notes/todo.txt"}, "difficulty": "easy"}
+{"id": "fs-005", "request": "Make a new folder build/output", "expected_tool": "create_directory", "expected_args": {"path": "/project/build/output"}, "difficulty": "easy"}
+{"id": "fs-006", "request": "What's in the src folder?", "expected_tool": "list_directory", "expected_args": {"path": "/project/src"}, "difficulty": "easy"}
+{"id": "fs-007", "request": "Show me the whole folder structure of the project as a tree", "expected_tool": "directory_tree", "expected_args": {"path": "/project"}, "difficulty": "easy"}
+{"id": "fs-008", "request": "Rename config.yaml to config.old.yaml", "expected_tool": "move_file", "expected_args": {"source": "/project/config.yaml", "destination": "/project/config.old.yaml"}, "difficulty": "easy"}
+{"id": "fs-009", "request": "Make a copy of .env.example called .env", "expected_tool": "copy_file", "expected_args": {"source": "/project/.env.example", "destination": "/project/.env"}, "difficulty": "easy"}
+{"id": "fs-010", "request": "Find all Python files anywhere in the project", "expected_tool": "search_files", "expected_args": {"path": "/project", "pattern": "**/*.py"}, "difficulty": "easy"}
+{"id": "fs-011", "request": "When was package.json last modified?", "expected_tool": "get_file_info", "expected_args": {"path": "/project/package.json"}, "difficulty": "easy"}
+{"id": "fs-012", "request": "Which directories are you allowed to access?", "expected_tool": "list_allowed_directories", "expected_args": {}, "difficulty": "easy"}
+{"id": "fs-013", "request": "In src/config.py, change DEBUG = True to DEBUG = False", "expected_tool": "edit_file", "expected_args": {"path": "/project/src/config.py"}, "difficulty": "easy"}
+{"id": "fs-014", "request": "Add the line 'node_modules/' to the end of .gitignore", "expected_tool": "append_file", "expected_args": {"path": "/project/.gitignore"}, "difficulty": "easy"}
+{"id": "fs-015", "request": "Read package.json and tsconfig.json", "expected_tool": "read_multiple_files", "expected_args": {"paths": ["/project/package.json", "/project/tsconfig.json"]}, "difficulty": "easy"}
+{"id": "fs-016", "request": "Show me the image docs/diagram.png", "expected_tool": "read_media_file", "expected_args": {"path": "/project/docs/diagram.png"}, "difficulty": "easy"}
+{"id": "fs-017", "request": "List the files in data/ with their sizes", "expected_tool": "list_directory_with_sizes", "expected_args": {"path": "/project/data"}, "difficulty": "easy"}
+{"id": "fs-018", "request": "What are the biggest files in the downloads folder?", "expected_tool": "list_directory_with_sizes", "expected_args": {"path": "/project/downloads", "sortBy": "size"}, "difficulty": "easy"}
+{"id": "fs-019", "request": "Show the project tree, only two levels deep", "expected_tool": "directory_tree", "expected_args": {"path": "/project", "depth": 2}, "difficulty": "easy"}
+{"id": "fs-020", "request": "Preview what would change if I replaced 'v1' with 'v2' in VERSION.txt, but don't save anything", "expected_tool": "edit_file", "expected_args": {"path": "/project/VERSION.txt", "dryRun": true}, "difficulty": "easy"}
+{"id": "fs-021", "request": "Compare src/a.py and src/b.py", "expected_tool": "read_multiple_files", "expected_args": {"paths": ["/project/src/a.py", "/project/src/b.py"]}, "difficulty": "confusable"}
+{"id": "fs-022", "request": "What's in the recording audio/intro.mp3?", "expected_tool": "read_media_file", "expected_args": {"path": "/project/audio/intro.mp3"}, "difficulty": "confusable"}
+{"id": "fs-023", "request": "Show me the SVG source code of logo.svg", "expected_tool": "read_text_file", "expected_args": {"path": "/project/logo.svg"}, "difficulty": "confusable"}
+{"id": "fs-024", "request": "Replace everything in notes.txt with just the word 'hello'", "expected_tool": "write_file", "expected_args": {"path": "/project/notes.txt"}, "difficulty": "confusable"}
+{"id": "fs-025", "request": "Back up settings.json as settings.json.bak and keep the original", "expected_tool": "copy_file", "expected_args": {"source": "/project/settings.json", "destination": "/project/settings.json.bak"}, "difficulty": "confusable"}
+{"id": "fs-026", "request": "How big is data/dump.sql?", "expected_tool": "get_file_info", "expected_args": {"path": "/project/data/dump.sql"}, "difficulty": "confusable"}
+{"id": "fs-027", "request": "List everything inside src, including all its subfolders", "expected_tool": "directory_tree", "expected_args": {"path": "/project/src"}, "difficulty": "confusable"}
+{"id": "fs-028", "request": "What does a .gitignore file do?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}
+{"id": "fs-029", "request": "Write me a Python function that reverses a string", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}
+{"id": "fs-030", "request": "What's the difference between a relative and an absolute path?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}

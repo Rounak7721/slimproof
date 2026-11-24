@@ -1,0 +1,30 @@
+{"id": "no-001", "request": "Find the page called 'Meeting notes'", "expected_tool": "API-post-search", "expected_args": {"query": "Meeting notes"}, "difficulty": "easy"}
+{"id": "no-002", "request": "Show me the Roadmap page as Markdown", "expected_tool": "API-retrieve-page-markdown", "expected_args": {"page_id": "2b1c3d4e-5f60-4718-9a2b-3c4d5e6f7a8b"}, "difficulty": "easy"}
+{"id": "no-003", "request": "Get the properties of the Roadmap page", "expected_tool": "API-retrieve-a-page", "expected_args": {"page_id": "2b1c3d4e-5f60-4718-9a2b-3c4d5e6f7a8b"}, "difficulty": "easy"}
+{"id": "no-004", "request": "List all users in the workspace", "expected_tool": "API-get-users", "expected_args": {}, "difficulty": "easy"}
+{"id": "no-005", "request": "Get the user details for Maya Chen", "expected_tool": "API-get-user", "expected_args": {"user_id": "5d6e7f80-9a1b-4c2d-8e3f-4a5b6c7d8e9f"}, "difficulty": "easy"}
+{"id": "no-006", "request": "Which bot user does this integration's token belong to?", "expected_tool": "API-get-self", "expected_args": {}, "difficulty": "easy"}
+{"id": "no-007", "request": "Show me the columns of the Tasks data source", "expected_tool": "API-retrieve-a-data-source", "expected_args": {"data_source_id": "9e8d7c6b-5a4f-4e3d-8c2b-1a0f9e8d7c6b"}, "difficulty": "easy"}
+{"id": "no-008", "request": "Get the Tasks database object", "expected_tool": "API-retrieve-a-database", "expected_args": {"database_id": "4a5b6c7d-8e9f-4a0b-9c1d-2e3f4a5b6c7d"}, "difficulty": "easy"}
+{"id": "no-009", "request": "List the blocks inside the Roadmap page", "expected_tool": "API-get-block-children", "expected_args": {"block_id": "2b1c3d4e-5f60-4718-9a2b-3c4d5e6f7a8b"}, "difficulty": "easy"}
+{"id": "no-010", "request": "Get the 'Ship v1' to-do block", "expected_tool": "API-retrieve-a-block", "expected_args": {"block_id": "3f4e5d6c-7b8a-4d9e-8f0a-1b2c3d4e5f6a"}, "difficulty": "easy"}
+{"id": "no-011", "request": "Tick the 'Ship v1' to-do as done", "expected_tool": "API-update-a-block", "expected_args": {"block_id": "3f4e5d6c-7b8a-4d9e-8f0a-1b2c3d4e5f6a"}, "difficulty": "easy"}
+{"id": "no-012", "request": "Delete the 'Ship v1' block", "expected_tool": "API-delete-a-block", "expected_args": {"block_id": "3f4e5d6c-7b8a-4d9e-8f0a-1b2c3d4e5f6a"}, "difficulty": "easy"}
+{"id": "no-013", "request": "Show the comments on the Roadmap page", "expected_tool": "API-retrieve-a-comment", "expected_args": {"block_id": "2b1c3d4e-5f60-4718-9a2b-3c4d5e6f7a8b"}, "difficulty": "easy"}
+{"id": "no-014", "request": "Comment 'Looks good' on the Roadmap page", "expected_tool": "API-create-a-comment", "expected_args": {"parent": {"page_id": "2b1c3d4e-5f60-4718-9a2b-3c4d5e6f7a8b"}}, "difficulty": "easy"}
+{"id": "no-015", "request": "Create a new page 'Q4 Plan' under the Team Wiki page", "expected_tool": "API-post-page", "expected_args": {"parent": {"page_id": "7c8d9e0f-1a2b-4c3d-8e4f-5a6b7c8d9e0f"}}, "difficulty": "easy"}
+{"id": "no-016", "request": "Move the Roadmap page under Team Wiki", "expected_tool": "API-move-page", "expected_args": {"page_id": "2b1c3d4e-5f60-4718-9a2b-3c4d5e6f7a8b"}, "difficulty": "easy"}
+{"id": "no-017", "request": "Rename the Tasks data source to 'Sprint Tasks'", "expected_tool": "API-update-a-data-source", "expected_args": {"data_source_id": "9e8d7c6b-5a4f-4e3d-8c2b-1a0f9e8d7c6b"}, "difficulty": "easy"}
+{"id": "no-018", "request": "Create a new database called 'Bugs' inside the Team Wiki page", "expected_tool": "API-create-a-data-source", "expected_args": {}, "difficulty": "easy"}
+{"id": "no-019", "request": "Which templates does the Tasks data source have?", "expected_tool": "API-list-data-source-templates", "expected_args": {"data_source_id": "9e8d7c6b-5a4f-4e3d-8c2b-1a0f9e8d7c6b"}, "difficulty": "easy"}
+{"id": "no-020", "request": "Set the Status of 'Fix login bug' to Done", "expected_tool": "API-patch-page", "expected_args": {"page_id": "6e7f8091-a2b3-4c4d-9e5f-6a7b8c9d0e1f"}, "difficulty": "easy"}
+{"id": "no-021", "request": "Show all tasks in the Tasks database", "expected_tool": "API-query-data-source", "expected_args": {"data_source_id": "9e8d7c6b-5a4f-4e3d-8c2b-1a0f9e8d7c6b"}, "difficulty": "easy"}
+{"id": "no-022", "request": "Add a paragraph 'Q3 goals' to the end of the Roadmap page", "expected_tool": "API-patch-block-children", "expected_args": {"block_id": "2b1c3d4e-5f60-4718-9a2b-3c4d5e6f7a8b"}, "difficulty": "confusable"}
+{"id": "no-023", "request": "What is the Status of the 'Fix login bug' task? Fetch just that property", "expected_tool": "API-retrieve-a-page-property", "expected_args": {"page_id": "6e7f8091-a2b3-4c4d-9e5f-6a7b8c9d0e1f", "property_id": "St%3Ax"}, "difficulty": "confusable"}
+{"id": "no-024", "request": "Replace the whole content of the Roadmap page with '# Roadmap' and the line 'TBD'", "expected_tool": "API-update-page-markdown", "expected_args": {"page_id": "2b1c3d4e-5f60-4718-9a2b-3c4d5e6f7a8b", "type": "replace_content"}, "difficulty": "confusable"}
+{"id": "no-025", "request": "In the Roadmap page, change the text 'Q3' to 'Q4'", "expected_tool": "API-update-page-markdown", "expected_args": {"page_id": "2b1c3d4e-5f60-4718-9a2b-3c4d5e6f7a8b", "type": "update_content"}, "difficulty": "confusable"}
+{"id": "no-026", "request": "Show only the tasks whose Status is Done", "expected_tool": "API-query-data-source", "expected_args": {"data_source_id": "9e8d7c6b-5a4f-4e3d-8c2b-1a0f9e8d7c6b"}, "difficulty": "confusable"}
+{"id": "no-027", "request": "Find every page and database with 'onboarding' in its title", "expected_tool": "API-post-search", "expected_args": {"query": "onboarding"}, "difficulty": "confusable"}
+{"id": "no-028", "request": "What is a Notion database?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}
+{"id": "no-029", "request": "How do I write a good meeting agenda?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}
+{"id": "no-030", "request": "What's the difference between a wiki and a project tracker?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}
