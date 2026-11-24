@@ -12,7 +12,7 @@ from slimproof.core.audit import audit as run_audit
 from slimproof.core.client import server_from
 from slimproof.core.configs import config_paths
 from slimproof.core.report import to_json, to_table
-from slimproof.core.tokens import claude_setup_problem
+from slimproof.core.tokens import DEFAULT_RATIO, claude_setup_problem
 from slimproof.server import mcp as mcp_server
 
 app = typer.Typer(no_args_is_help=True)
@@ -22,6 +22,11 @@ ExactOption = Annotated[
     typer.Option(
         "--exact", help="Exact Claude token counts via the free count_tokens API (needs API key)."
     ),
+]
+
+RatioOption = Annotated[
+    float,
+    typer.Option(min=0.5, help="Characters per token for the estimate. Lower = higher counts."),
 ]
 
 
@@ -44,6 +49,7 @@ def audit(
     ] = None,
     fmt: Annotated[Literal["table", "json"], typer.Option("--format")] = "table",
     exact: ExactOption = False,
+    ratio: RatioOption = DEFAULT_RATIO,
 ) -> None:
     """Rank every tool in your MCP configs by token cost."""
     _check_exact(exact)
@@ -52,7 +58,7 @@ def audit(
         typer.echo("No MCP config files found. Pass one with --config.", err=True)
         raise typer.Exit(2)
 
-    _print_result(asyncio.run(run_audit(paths, exact)), fmt)
+    _print_result(asyncio.run(run_audit(paths, exact, ratio)), fmt)
 
 
 @app.command()
@@ -61,6 +67,7 @@ def server(
     url: Annotated[str | None, typer.Option(help="Streamable HTTP URL.")] = None,
     fmt: Annotated[Literal["table", "json"], typer.Option("--format")] = "table",
     exact: ExactOption = False,
+    ratio: RatioOption = DEFAULT_RATIO,
 ) -> None:
     """Audit one server without a config: `server -- CMD ARGS...` or `server --url URL`."""
     _check_exact(exact)
@@ -69,7 +76,7 @@ def server(
     except ValueError as e:
         typer.echo(str(e), err=True)
         raise typer.Exit(2) from None
-    _print_result(asyncio.run(audit_one(name, params, exact)), fmt)
+    _print_result(asyncio.run(audit_one(name, params, exact, ratio)), fmt)
 
 
 @app.command("mcp")

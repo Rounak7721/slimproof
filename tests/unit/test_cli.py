@@ -74,3 +74,14 @@ def test_exact_uses_claude_counts(monkeypatch: pytest.MonkeyPatch) -> None:
     data = json.loads(result.stdout)
     assert data["exact"] is True
     assert {c["tokens"] for c in data["costs"]} == {7}
+
+
+def test_ratio_changes_the_estimate() -> None:
+    def total(ratio: str) -> int:
+        result = CliRunner().invoke(
+            app,
+            ["server", "--format", "json", "--ratio", ratio, "--", sys.executable, str(FIXTURE)],
+        )
+        return sum(c["tokens"] for c in json.loads(result.stdout)["costs"])
+
+    assert total("2") > total("4")

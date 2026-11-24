@@ -20,11 +20,20 @@ def to_table(costs: list[ToolCost], exact: bool = False) -> Table:
         title, column = f"MCP tool token cost (exact, {CLAUDE_MODEL})", "Tokens"
     else:
         title, column = "MCP tool token cost (~ = estimate)", "~Tokens"
-    table = Table(title=title)
+    total = sum(c.tokens for c in costs)
+    table = Table(title=title, caption=context_share(total))
     table.add_column("Server")
     table.add_column("Tool")
     table.add_column(column, justify="right")
     for c in costs:
-        table.add_row(c.server, c.tool, str(c.tokens))
-    table.add_row("", "[bold]Total", f"[bold]{sum(c.tokens for c in costs)}")
+        table.add_row(c.server, c.tool, f"{c.tokens:,}")
+    table.add_row("", "[bold]Total", f"[bold]{total:,}")
     return table
+
+
+def context_share(total: int) -> str:
+    """`total` tool tokens as a share of Claude's 200K and 1M context windows."""
+    return (
+        f"Uses {total / 200_000:.1%} of a 200K context window "
+        f"({total / 1_000_000:.1%} of 1M) in every request."
+    )

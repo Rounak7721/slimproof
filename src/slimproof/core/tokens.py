@@ -7,7 +7,8 @@ import os
 
 from mcp import types
 
-DEFAULT_RATIO = 4.0
+# Characters per Claude token for MCP tool JSON: measured 2.24-3.16 on 6 servers (avg 2.59).
+DEFAULT_RATIO = 2.5
 
 CLAUDE_MODEL = "claude-opus-5-5"
 
