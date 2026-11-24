@@ -1,6 +1,6 @@
 {"id": "dc-001", "request": "Show me the contents of /project/README.md", "expected_tool": "read_file", "expected_args": {"path": "/project/README.md"}, "difficulty": "easy"}
 {"id": "dc-002", "request": "Show the last 20 lines of /project/logs/app.log", "expected_tool": "read_file", "expected_args": {"path": "/project/logs/app.log", "offset": -20}, "difficulty": "easy"}
-{"id": "dc-003", "request": "Read lines 100 to 104 of /project/data.csv", "expected_tool": "read_file", "expected_args": {"path": "/project/data.csv", "offset": 100, "length": 5}, "difficulty": "easy"}
+{"id": "dc-003", "request": "Show 5 lines of /project/data.csv, skipping the first 100 lines", "expected_tool": "read_file", "expected_args": {"path": "/project/data.csv", "offset": 100, "length": 5}, "difficulty": "easy"}
 {"id": "dc-004", "request": "Read /project/a.py and /project/b.py", "expected_tool": "read_multiple_files", "expected_args": {"paths": ["/project/a.py", "/project/b.py"]}, "difficulty": "easy"}
 {"id": "dc-005", "request": "Create /project/notes.txt with the text 'hello'", "expected_tool": "write_file", "expected_args": {"path": "/project/notes.txt"}, "difficulty": "easy"}
 {"id": "dc-006", "request": "Make a PDF called /project/report.pdf from the markdown '# Report'", "expected_tool": "write_pdf", "expected_args": {}, "difficulty": "easy"}
@@ -20,7 +20,7 @@
 {"id": "dc-020", "request": "Show me the Desktop Commander configuration", "expected_tool": "get_config", "expected_args": {}, "difficulty": "easy"}
 {"id": "dc-021", "request": "Set the file read line limit to 2000", "expected_tool": "set_config_value", "expected_args": {"key": "fileReadLineLimit", "value": 2000}, "difficulty": "easy"}
 {"id": "dc-022", "request": "Fetch https://example.com/robots.txt", "expected_tool": "read_file", "expected_args": {"path": "https://example.com/robots.txt", "isUrl": true}, "difficulty": "confusable"}
-{"id": "dc-023", "request": "Add the line 'done' to the end of /project/log.txt", "expected_tool": "write_file", "expected_args": {"path": "/project/log.txt", "mode": "append"}, "difficulty": "confusable"}
+{"id": "dc-023", "request": "/project/log.txt already ends with a newline. Add the line 'done' to the end of it", "expected_tool": "write_file", "expected_args": {"path": "/project/log.txt", "mode": "append"}, "difficulty": "confusable"}
 {"id": "dc-024", "request": "Show only what's directly inside /project, no subfolders", "expected_tool": "list_directory", "expected_args": {"path": "/project", "depth": 1}, "difficulty": "confusable"}
 {"id": "dc-025", "request": "Find every TODO comment in the code under /project", "expected_tool": "start_search", "expected_args": {"path": "/project", "searchType": "content"}, "difficulty": "confusable"}
 {"id": "dc-026", "request": "How many lines does /project/data.csv have?", "expected_tool": "get_file_info", "expected_args": {"path": "/project/data.csv"}, "difficulty": "confusable"}

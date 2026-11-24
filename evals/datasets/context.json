@@ -1,6 +1,6 @@
 {
-  "filesystem": "The allowed directory is /project. Relative paths are inside /project.",
-  "desktop-commander": "The allowed directory is /project. A Python REPL started earlier with start_process is running as pid 4242. An active file search has sessionId \"search_1\".",
+  "filesystem": "The allowed directory is /project. Paths in requests are relative to /project.",
+  "desktop-commander": "The allowed directory is /project. Paths in requests are relative to /project. A Python REPL started earlier with start_process is running as pid 4242. An active file search has sessionId \"search_1\".",
   "playwright": "A browser is open on https://shop.example.com/login (tab 0). Latest page snapshot:\n- img \"Shop logo\" [ref=e3]\n- textbox \"Email\" [ref=e5]\n- textbox \"Password\" [ref=e6]\n- checkbox \"Remember me\" [ref=e7]\n- combobox \"Country\" [ref=e8]: India, Germany, USA\n- button \"Log in\" [ref=e9]\n- link \"Forgot password?\" [ref=e10]\n- listitem \"Item A\" [ref=e20]\n- listitem \"Trash bin\" [ref=e21]\n- generic \"File drop zone\" [ref=e30]",
   "chrome-devtools": "Selected page: pageId 1, https://shop.example.com/login. Latest snapshot of page 1:\nuid=1_3 image \"Shop logo\"\nuid=1_5 textbox \"Email\"\nuid=1_6 textbox \"Password\"\nuid=1_7 checkbox \"Remember me\"\nuid=1_8 combobox \"Country\"\nuid=1_9 button \"Log in\"\nuid=1_10 link \"Forgot password?\"\nuid=1_20 listitem \"Item A\"\nuid=1_21 listitem \"Trash bin\"\nuid=1_30 button \"Upload avatar\" (opens a file chooser)",
   "github": "The current repository is acme/webapp (owner \"acme\", repo \"webapp\", default branch main). The signed-in GitHub user is octocat.",

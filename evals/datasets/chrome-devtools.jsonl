@@ -21,7 +21,7 @@
 {"id": "cd-021", "request": "Fill in the login form: email alice@example.com, password hunter2, and tick Remember me", "expected_tool": "fill_form", "expected_args": {"pageId": 1}, "difficulty": "confusable"}
 {"id": "cd-022", "request": "Find out why this page is slow to load", "expected_tool": "performance_start_trace", "expected_args": {"pageId": 1}, "difficulty": "confusable"}
 {"id": "cd-023", "request": "Which CSS rules make the Log in button blue?", "expected_tool": "get_css_styles", "expected_args": {"pageId": 1, "uid": "1_9"}, "difficulty": "confusable"}
-{"id": "cd-024", "request": "Check this page for JavaScript memory leaks", "expected_tool": "take_heapsnapshot", "expected_args": {"pageId": 1}, "difficulty": "confusable"}
+{"id": "cd-024", "request": "Save a heap snapshot of this page to /tmp/page.heapsnapshot so I can look for memory leaks", "expected_tool": "take_heapsnapshot", "expected_args": {"pageId": 1, "filePath": "/tmp/page.heapsnapshot"}, "difficulty": "easy"}
 {"id": "cd-025", "request": "The page just changed. Get me the current elements and their uids", "expected_tool": "take_snapshot", "expected_args": {"pageId": 1}, "difficulty": "confusable"}
 {"id": "cd-026", "request": "Press Ctrl+A to select everything", "expected_tool": "press_key", "expected_args": {"pageId": 1, "key": "Control+A"}, "difficulty": "confusable"}
 {"id": "cd-027", "request": "What is the value of document.title on this page?", "expected_tool": "evaluate_script", "expected_args": {"pageId": 1}, "difficulty": "confusable"}

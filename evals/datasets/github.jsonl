@@ -8,7 +8,7 @@
 {"id": "gh-008", "request": "Which files does PR #8 change?", "expected_tool": "pull_request_read", "expected_args": {"owner": "acme", "repo": "webapp", "pullNumber": 8, "method": "get_files"}, "difficulty": "easy"}
 {"id": "gh-009", "request": "Create a branch feature/login from main", "expected_tool": "create_branch", "expected_args": {"owner": "acme", "repo": "webapp", "branch": "feature/login", "from_branch": "main"}, "difficulty": "easy"}
 {"id": "gh-010", "request": "Open a pull request from feature/login into main titled 'Add login'", "expected_tool": "create_pull_request", "expected_args": {"owner": "acme", "repo": "webapp", "head": "feature/login", "base": "main", "title": "Add login"}, "difficulty": "easy"}
-{"id": "gh-011", "request": "Squash-merge PR #8", "expected_tool": "merge_pull_request", "expected_args": {"owner": "acme", "repo": "webapp", "pullNumber": 8, "merge_method": "squash"}, "difficulty": "easy"}
+{"id": "gh-011", "request": "PR #8 is approved and all its checks pass. Squash-merge it", "expected_tool": "merge_pull_request", "expected_args": {"owner": "acme", "repo": "webapp", "pullNumber": 8, "merge_method": "squash"}, "difficulty": "easy"}
 {"id": "gh-012", "request": "Show me the README.md of the repo", "expected_tool": "get_file_contents", "expected_args": {"owner": "acme", "repo": "webapp", "path": "README.md"}, "difficulty": "easy"}
 {"id": "gh-013", "request": "What's the latest release?", "expected_tool": "get_latest_release", "expected_args": {"owner": "acme", "repo": "webapp"}, "difficulty": "easy"}
 {"id": "gh-014", "request": "Show the recent commits on main", "expected_tool": "list_commits", "expected_args": {"owner": "acme", "repo": "webapp"}, "difficulty": "easy"}
