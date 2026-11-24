@@ -11,7 +11,7 @@ from slimproof.core.client import HttpServer, NeedsLogin, list_tools
 from slimproof.core.configs import load_servers
 from slimproof.core.guard import without_wording
 from slimproof.core.rules import Finding, check
-from slimproof.core.tokens import DEFAULT_RATIO, count_claude_tokens, estimate_tokens, tool_text
+from slimproof.core.tokens import DEFAULT_RATIO, count_tokens
 
 
 @dataclass(frozen=True)
@@ -48,10 +48,7 @@ async def audit_server(
     """
     tools = await list_tools(server)
     bare = [without_wording(t) for t in tools]
-    if exact:
-        counts = count_claude_tokens(tools + bare)  # ponytail: sync calls; fine for the CLI
-    else:
-        counts = [estimate_tokens(tool_text(t), ratio) for t in tools + bare]
+    counts = count_tokens(tools + bare, exact, ratio)  # one batch shares the API baseline
     full, structure = counts[: len(tools)], counts[len(tools) :]
     costs = [
         ToolCost(name, t.name, n, max(n - s, 0))  # exact counts can wobble by a token

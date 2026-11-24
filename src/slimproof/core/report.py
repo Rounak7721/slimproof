@@ -6,6 +6,7 @@ from dataclasses import asdict
 from rich.table import Table
 
 from slimproof.core.audit import AuditResult, ToolCost
+from slimproof.core.guard import ToolChange
 from slimproof.core.tokens import CLAUDE_MODEL
 
 
@@ -94,3 +95,57 @@ def context_share(total: int) -> str:
         f"Uses {total / 200_000:.1%} of a 200K context window "
         f"({total / 1_000_000:.1%} of 1M) in every request."
     )
+
+
+def _compare_rows(changes: list[ToolChange]) -> list[tuple[str, str, str, str, str]]:
+    """(tool, before, after, saved, guard) per change, plus a total row."""
+    rows = [
+        (
+            c.tool,
+            f"{c.before:,}",
+            f"{c.after:,}",
+            _saved(c.before, c.after),
+            "; ".join(c.problems) or "ok",
+        )
+        for c in changes
+    ]
+    before, after = sum(c.before for c in changes), sum(c.after for c in changes)
+    failed = sum(1 for c in changes if c.problems)
+    guard = f"{failed} failed" if failed else "all ok"
+    return [*rows, ("Total", f"{before:,}", f"{after:,}", _saved(before, after), guard)]
+
+
+def _saved(before: int, after: int) -> str:
+    """Tokens saved and the share of `before`, e.g. '1,200 (40%)'."""
+    return _part(before - after, before)
+
+
+def compare_table(changes: list[ToolChange], exact: bool = False) -> Table:
+    """Slim-vs-original results as a rich table, with a total."""
+    title, column = _headings(exact)
+    table = Table(title=title.replace("MCP tool token cost", "Slim vs original"))
+    table.add_column("Tool")
+    table.add_column(f"{column} before", justify="right")
+    table.add_column(f"{column} after", justify="right")
+    table.add_column("Saved", justify="right")
+    table.add_column("Guard")
+    *rows, total = _compare_rows(changes)
+    for row in rows:
+        table.add_row(*row)
+    table.add_row(*(f"[bold]{cell}" for cell in total))
+    return table
+
+
+def compare_markdown(changes: list[ToolChange], exact: bool = False) -> str:
+    """Slim-vs-original results as Markdown."""
+    title, column = _headings(exact)
+    *rows, total = _compare_rows(changes)
+    lines = [
+        f"## {title.replace('MCP tool token cost', 'Slim vs original')}",
+        "",
+        f"| Tool | {column} before | {column} after | Saved | Guard |",
+        "|---|--:|--:|--:|---|",
+        *("| " + " | ".join(_cell(cell) for cell in row) + " |" for row in rows),
+        "| " + " | ".join(f"**{_cell(cell)}**" for cell in total) + " |",
+    ]
+    return "\n".join(lines) + "\n"

@@ -6,7 +6,7 @@ import pytest
 from typer.testing import CliRunner
 
 from slimproof.cli import app
-from slimproof.core import audit as audit_module
+from slimproof.core import tokens as tokens_module
 
 
 def test_audit_json_reports_broken_server(tmp_path: Path) -> None:
@@ -65,7 +65,7 @@ def test_exact_without_api_key_exits_with_hint(monkeypatch: pytest.MonkeyPatch) 
 
 def test_exact_uses_claude_counts(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ANTHROPIC_API_KEY", "fake")
-    monkeypatch.setattr(audit_module, "count_claude_tokens", lambda tools: [7] * len(tools))
+    monkeypatch.setattr(tokens_module, "count_claude_tokens", lambda tools: [7] * len(tools))
 
     result = CliRunner().invoke(
         app, ["server", "--exact", "--format", "json", "--", sys.executable, str(FIXTURE)]
@@ -95,3 +95,41 @@ def test_budget_exits_1_when_over() -> None:
     assert run("--budget", "0.1") == 1
     assert run("--budget", "1") == 0
     assert run("--budget", "0.1", "--window", "1000000") == 0
+
+
+def _write_tools(path: Path, description: str, param_type: str = "string") -> Path:
+    schema = {"type": "object", "properties": {"path": {"type": param_type}}}
+    tools = [{"name": "read", "description": description, "inputSchema": schema}]
+    path.write_text(json.dumps(tools), encoding="utf-8")
+    return path
+
+
+def test_compare_shows_savings_and_passes_guard(tmp_path: Path) -> None:
+    original = _write_tools(tmp_path / "o.json", "This tool allows you to read a file from disk.")
+    slim = _write_tools(tmp_path / "s.json", "Read a file.")
+
+    result = CliRunner().invoke(app, ["compare", str(original), str(slim), "--format", "markdown"])
+
+    assert result.exit_code == 0, result.output
+    assert "| **Total** |" in result.stdout
+    assert "**all ok**" in result.stdout
+
+
+def test_compare_exits_1_when_guard_fails(tmp_path: Path) -> None:
+    original = _write_tools(tmp_path / "o.json", "Read a file.")
+    slim = _write_tools(tmp_path / "s.json", "Read a file.", param_type="integer")
+
+    result = CliRunner().invoke(app, ["compare", str(original), str(slim), "--format", "json"])
+
+    assert result.exit_code == 1
+    assert json.loads(result.stdout)[0]["problems"] != []
+
+
+def test_compare_exits_2_on_bad_file(tmp_path: Path) -> None:
+    bad = tmp_path / "bad.json"
+    bad.write_text("{}", encoding="utf-8")
+
+    result = CliRunner().invoke(app, ["compare", str(bad), str(bad)])
+
+    assert result.exit_code == 2
+    assert "JSON list of tools" in result.output

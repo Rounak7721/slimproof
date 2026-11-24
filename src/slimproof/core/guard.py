@@ -5,7 +5,7 @@ from typing import Any
 
 from mcp import types
 
-from slimproof.core.tokens import estimate_tokens, tool_text
+from slimproof.core.tokens import DEFAULT_RATIO, count_tokens
 
 WORDING = {"description", "title"}
 NAME_MAPS = {"properties", "patternProperties", "$defs", "definitions"}
@@ -61,10 +61,6 @@ def _diff(a: Any, b: Any, path: str) -> list[str]:
     return out
 
 
-def _cost(tool: types.Tool) -> int:
-    return estimate_tokens(tool_text(tool))
-
-
 def guard(original: types.Tool, slim: types.Tool) -> list[str]:
     """Structural changes from `original` to `slim`; an empty list means only wording changed."""
     before = _structure(original.model_dump(by_alias=True, exclude_none=True))
@@ -72,16 +68,28 @@ def guard(original: types.Tool, slim: types.Tool) -> list[str]:
     return _diff(before, after, original.name)
 
 
-def compare(original: list[types.Tool], slim: list[types.Tool]) -> list[ToolChange]:
+def compare(
+    original: list[types.Tool],
+    slim: list[types.Tool],
+    exact: bool = False,
+    ratio: float = DEFAULT_RATIO,
+) -> list[ToolChange]:
     """Pair tools by name; report token savings and guard problems for each."""
+    counts = count_tokens(original + slim, exact, ratio)  # one batch shares the API baseline
+    before = dict(zip((t.name for t in original), counts[: len(original)], strict=True))
+    after = dict(zip((t.name for t in slim), counts[len(original) :], strict=True))
     slim_by_name = {t.name: t for t in slim}
     changes = []
     for tool in original:
         new = slim_by_name.pop(tool.name, None)
         if new is None:
-            changes.append(ToolChange(tool.name, _cost(tool), 0, ["missing from the slim version"]))
+            changes.append(
+                ToolChange(tool.name, before[tool.name], 0, ["missing from the slim version"])
+            )
         else:
-            changes.append(ToolChange(tool.name, _cost(tool), _cost(new), guard(tool, new)))
-    for name, extra in slim_by_name.items():
-        changes.append(ToolChange(name, 0, _cost(extra), ["not in the original"]))
+            changes.append(
+                ToolChange(tool.name, before[tool.name], after[tool.name], guard(tool, new))
+            )
+    for name in slim_by_name:
+        changes.append(ToolChange(name, 0, after[name], ["not in the original"]))
     return changes

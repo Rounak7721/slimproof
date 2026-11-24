@@ -58,3 +58,12 @@ def count_claude_tokens(tools: list[types.Tool], model: str = CLAUDE_MODEL) -> l
         full = client.messages.count_tokens(model=model, messages=messages, tools=[anchor, target])
         counts.append(full.input_tokens - base.input_tokens)
     return counts
+
+
+def count_tokens(
+    tools: list[types.Tool], exact: bool = False, ratio: float = DEFAULT_RATIO
+) -> list[int]:
+    """Tokens for each tool: exact via Claude's API, or estimated as characters / `ratio`."""
+    if exact:
+        return count_claude_tokens(tools)  # ponytail: sync calls; fine for the CLI
+    return [estimate_tokens(tool_text(t), ratio) for t in tools]
