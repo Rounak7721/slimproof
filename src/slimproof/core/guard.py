@@ -41,6 +41,11 @@ def _structure(node: Any) -> Any:
     return out
 
 
+def without_wording(tool: types.Tool) -> types.Tool:
+    """`tool` with every description and title removed: the part slimming can't change."""
+    return types.Tool.model_validate(_structure(tool.model_dump(by_alias=True, exclude_none=True)))
+
+
 def _diff(a: Any, b: Any, path: str) -> list[str]:
     """Every place where `a` and `b` differ, as 'path: old -> new' lines."""
     if not (isinstance(a, dict) and isinstance(b, dict)):

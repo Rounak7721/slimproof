@@ -21,14 +21,21 @@ def to_table(costs: list[ToolCost], exact: bool = False) -> Table:
     else:
         title, column = "MCP tool token cost (~ = estimate)", "~Tokens"
     total = sum(c.tokens for c in costs)
+    in_descriptions = sum(c.description_tokens for c in costs)
     table = Table(title=title, caption=context_share(total))
     table.add_column("Server")
     table.add_column("Tool")
     table.add_column(column, justify="right")
+    table.add_column("In descriptions", justify="right")
     for c in costs:
-        table.add_row(c.server, c.tool, f"{c.tokens:,}")
-    table.add_row("", "[bold]Total", f"[bold]{total:,}")
+        table.add_row(c.server, c.tool, f"{c.tokens:,}", _part(c.description_tokens, c.tokens))
+    table.add_row("", "[bold]Total", f"[bold]{total:,}", f"[bold]{_part(in_descriptions, total)}")
     return table
+
+
+def _part(part: int, whole: int) -> str:
+    """'part (share%)', e.g. '1,200 (40%)'."""
+    return f"{part:,} ({part / whole:.0%})" if whole else "0"
 
 
 def over_budget(total: int, budget: float, window: int = 200_000) -> str | None:

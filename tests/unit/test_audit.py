@@ -26,6 +26,7 @@ async def test_audit_server_costs_each_tool() -> None:
     assert costs[0].server == "fake"
     assert costs[0].tool == "ping"
     assert costs[0].tokens > 0
+    assert 0 < costs[0].description_tokens < costs[0].tokens
 
 
 @pytest.mark.anyio

@@ -2,7 +2,7 @@ from typing import Any
 
 from mcp import types
 
-from slimproof.core.guard import compare, guard
+from slimproof.core.guard import compare, guard, without_wording
 
 PATH = {"path": {"type": "string", "description": "Path of the file to read, relative to root."}}
 
@@ -56,3 +56,11 @@ def test_compare_reports_savings_and_unpaired_tools() -> None:
         ["not in the original"],
     ]
     assert changes[0].after < changes[0].before
+
+
+def test_without_wording_keeps_params_named_description() -> None:
+    props = {"description": {"type": "string", "description": "Text of the note."}}
+    bare = without_wording(_tool("Create a note.", props))
+
+    assert bare.description is None
+    assert bare.input_schema["properties"] == {"description": {"type": "string"}}

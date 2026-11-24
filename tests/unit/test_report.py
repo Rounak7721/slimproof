@@ -3,13 +3,18 @@ import json
 from slimproof.core.audit import AuditResult, ToolCost
 from slimproof.core.report import context_share, over_budget, to_json, to_table
 
-COSTS = [ToolCost("github", "create_issue", 120), ToolCost("github", "ping", 10)]
+COSTS = [ToolCost("github", "create_issue", 120, 80), ToolCost("github", "ping", 10, 4)]
 
 
 def test_to_json_round_trips() -> None:
     result = AuditResult(COSTS, {"broken": "not found"}, {"remote": "http not supported"})
     data = json.loads(to_json(result))
-    assert data["costs"][0] == {"server": "github", "tool": "create_issue", "tokens": 120}
+    assert data["costs"][0] == {
+        "server": "github",
+        "tool": "create_issue",
+        "tokens": 120,
+        "description_tokens": 80,
+    }
     assert data["errors"] == {"broken": "not found"}
     assert data["skipped"] == {"remote": "http not supported"}
 
