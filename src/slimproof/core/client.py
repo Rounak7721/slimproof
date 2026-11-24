@@ -1,7 +1,9 @@
 """Connect to an MCP server and list its tools."""
 
 import asyncio
+import re
 from dataclasses import dataclass, field
+from urllib.parse import urlsplit
 
 import httpx2
 from mcp import Client, StdioServerParameters, types
@@ -42,9 +44,46 @@ def server_from(
     if bool(command) == bool(url):
         raise ValueError("Give either a stdio command or a url, not both.")
     if url:
-        return url, HttpServer(url)
+        return url_name(url), HttpServer(url)
     assert command  # narrows the type for pyright
-    return command[0], StdioServerParameters(command=command[0], args=command[1:])
+    return command_name(command), StdioServerParameters(command=command[0], args=command[1:])
+
+
+LAUNCHERS = {"npx", "uvx", "bunx", "pnpx", "pnpm", "npm", "yarn", "node", "bun", "deno"}
+LAUNCHERS |= {"python", "python3", "py", "uv", "pipx", "docker", "podman"}
+SUBCOMMANDS = {"run", "dlx", "exec", "x", "tool"}
+VALUE_FLAGS = {"-e", "--env", "-v", "--volume", "--from", "--with", "--directory", "--name"}
+
+
+def _last_part(path: str) -> str:
+    """Last segment of a POSIX or Windows path, URL path or package name."""
+    return re.split(r"[\\/]", path.rstrip("\\/"))[-1]
+
+
+def command_name(command: list[str]) -> str:
+    """Short, path-free name for a stdio command: the package or script it launches.
+
+    `npx -y @scope/server-x@1.2 /dir` -> `server-x`, `/venv/bin/python app.py` -> `app`.
+    """
+    program = re.sub(r"\.(exe|cmd|bat)$", "", _last_part(command[0]), flags=re.IGNORECASE)
+    if program.lower() not in LAUNCHERS:
+        return program
+    skip_next = False
+    for arg in command[1:]:
+        if skip_next or arg.startswith("-") or arg in SUBCOMMANDS or "=" in arg:
+            skip_next = arg in VALUE_FLAGS
+            continue
+        name = _last_part(arg).split(":")[0]  # docker image tag
+        name = re.sub(r"\.(py|js|mjs|cjs|ts)$", "", name)
+        return name.rsplit("@", 1)[0] if name.rfind("@") > 0 else name.lstrip("@")
+    return program
+
+
+def url_name(url: str) -> str:
+    """Host and path of `url`; never the query or user:password, which can hold secrets."""
+    parts = urlsplit(url)
+    host = parts.hostname or ""
+    return f"{host}:{parts.port}{parts.path}" if parts.port else f"{host}{parts.path}"
 
 
 async def list_tools(
