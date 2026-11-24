@@ -45,6 +45,11 @@ def test_sp002_flags_identifier_name_only() -> None:
     assert sp002(_named("search", "Search the files.")) == []
 
 
+def test_sp002_flags_camel_case_name() -> None:
+    assert sp002(_named("getFileContents", "getFileContents: returns a file.")) != []
+    assert sp002(_named("getFileContents", "Get the file contents.")) == []
+
+
 def test_sp003_flags_restated_type_only() -> None:
     restated = {"type": "string", "description": "A string that is the path."}
     useful = {"type": "string", "description": "Absolute path inside the vault."}

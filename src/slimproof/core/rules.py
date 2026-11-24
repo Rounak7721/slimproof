@@ -109,7 +109,8 @@ def sp001(tool: types.Tool) -> list[str]:
 
 def sp002(tool: types.Tool) -> list[str]:
     """Description repeats the tool's identifier, like `read_file`."""
-    if not any(sep in tool.name for sep in "_-."):
+    camel = re.search(r"[a-z][A-Z]", tool.name)
+    if not camel and not any(sep in tool.name for sep in "_-."):
         return []  # single words like "search" appear naturally in prose
     desc = (tool.description or "").lower()
     return [f"repeats the tool name '{tool.name}'"] if tool.name.lower() in desc else []
