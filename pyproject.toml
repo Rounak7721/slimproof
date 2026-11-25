@@ -43,3 +43,7 @@ dev = [
     "pytest>=9.2.0",
     "ruff>=0.17.6",
 ]
+eval = [
+    "anthropic>=2.12.0",
+    "jsonschema>=4.26.0",
+]

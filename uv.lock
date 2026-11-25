@@ -1635,6 +1635,10 @@ dev = [
     { name = "pytest" },
     { name = "ruff" },
 ]
+eval = [
+    { name = "anthropic" },
+    { name = "jsonschema" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -1652,6 +1656,10 @@ dev = [
     { name = "pyright", specifier = ">=1.1.414" },
     { name = "pytest", specifier = ">=9.2.0" },
     { name = "ruff", specifier = ">=0.17.6" },
+]
+eval = [
+    { name = "anthropic", specifier = ">=2.12.0" },
+    { name = "jsonschema", specifier = ">=4.26.0" },
 ]
 
 [[package]]
