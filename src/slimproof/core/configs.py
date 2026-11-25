@@ -44,6 +44,21 @@ def _read(path: Path) -> dict[str, Any]:
     return data
 
 
+def _project(data: dict[str, Any], cwd: Path) -> dict[str, Any]:
+    """The `projects` entry for `cwd` in a `~/.claude.json`; {} if there is none."""
+    projects = data.get("projects")
+    if not isinstance(projects, dict):
+        return {}
+    project = projects.get(cwd.as_posix()) or projects.get(str(cwd))  # Windows may use either
+    return project if isinstance(project, dict) else {}
+
+
+def _servers(data: dict[str, Any]) -> dict[str, Any]:
+    """The `mcpServers` map in `data` (the live object, so edits go back into it); {} if none."""
+    servers = data.get("mcpServers")
+    return servers if isinstance(servers, dict) else {}
+
+
 def load_servers(
     paths: list[Path], cwd: Path | None = None
 ) -> tuple[dict[str, StdioServerParameters | HttpServer], dict[str, str]]:
@@ -58,10 +73,8 @@ def load_servers(
     shared: dict[str, Any] = {}
     for path in paths:
         data = _read(path)
-        projects = data.get("projects", {})
-        project = projects.get(here.as_posix()) or projects.get(str(here), {})
-        local = {**project.get("mcpServers", {}), **local}  # earlier paths win
-        shared = {**data.get("mcpServers", {}), **shared}
+        local = {**_servers(_project(data, here)), **local}  # earlier paths win
+        shared = {**_servers(data), **shared}
 
     servers: dict[str, StdioServerParameters | HttpServer] = {}
     skipped: dict[str, str] = {}
@@ -88,6 +101,24 @@ def config_paths(cwd: Path) -> list[Path]:
         appdata / "Claude/claude_desktop_config.json",  # Windows
     ]
     return [p for p in candidates if p.is_file()]
+
+
+def locate(
+    name: str, paths: list[Path], cwd: Path | None = None
+) -> tuple[Path, dict[str, Any], dict[str, Any]]:
+    """Where Claude Code reads server `name` from: (file, its whole JSON, the entry's server map).
+
+    Same scope order as `load_servers`. Entries are raw: `${VAR}` stays unexpanded.
+    """
+    here = cwd or Path.cwd()
+    files = [(path, _read(path)) for path in paths]
+    for path, data in files:  # local scope first
+        if name in (servers := _servers(_project(data, here))):
+            return path, data, servers
+    for path, data in files:
+        if name in (servers := _servers(data)):
+            return path, data, servers
+    raise ValueError(f"No server named '{name}' in the MCP configs.")
 
 
 def find_server(name: str, paths: list[Path]) -> StdioServerParameters | HttpServer:

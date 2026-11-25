@@ -1615,6 +1615,7 @@ name = "slimproof"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [
+    { name = "anyio" },
     { name = "httpx2", version = "2.14.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "httpx2", version = "2.16.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "mcp", extra = ["cli"] },
@@ -1643,6 +1644,7 @@ eval = [
 [package.metadata]
 requires-dist = [
     { name = "anthropic", marker = "extra == 'claude'", specifier = ">=2.12.0" },
+    { name = "anyio", specifier = ">=4.15.1" },
     { name = "httpx2", specifier = ">=2.14.0" },
     { name = "mcp", extras = ["cli"], specifier = ">=2.3.0" },
     { name = "rich", specifier = ">=15.0.0" },

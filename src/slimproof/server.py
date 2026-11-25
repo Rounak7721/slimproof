@@ -9,10 +9,12 @@ from mcp import types
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 
+from slimproof.core.apply import real_server
 from slimproof.core.audit import audit, audit_one, tool_definitions
-from slimproof.core.client import server_from
+from slimproof.core.client import HttpServer, server_from
 from slimproof.core.configs import config_paths, find_server
 from slimproof.core.guard import compare as compare_tools
+from slimproof.core.overrides import save_overrides as save
 from slimproof.core.report import to_json
 
 mcp = MCPServer("slimproof", log_level="WARNING")
@@ -62,6 +64,25 @@ async def get_tools(
     """Full tool definitions (JSON) of one server: by config `name`, stdio `command` or `url`."""
     try:
         server = find_server(name, _paths(config_path)) if name else server_from(command, url)[1]
-        return json.dumps(await tool_definitions(server))
+        return json.dumps(await tool_definitions(real_server(server)))
     except (ValueError, RuntimeError) as e:
         raise ToolError(str(e)) from e
+
+
+@mcp.tool(annotations=types.ToolAnnotations(destructive_hint=False, idempotent_hint=True))
+async def save_overrides(
+    name: str, slim: list[dict[str, Any]], config_path: str | None = None
+) -> str:
+    """Save slim tools of configured server `name` for the proxy; guards them against live tools."""
+    try:
+        server = real_server(find_server(name, _paths(config_path)))
+        if isinstance(server, HttpServer):
+            raise ValueError(f"'{name}' is a remote HTTP server; the proxy can't serve those yet.")
+        originals = [types.Tool.model_validate(t) for t in await tool_definitions(server)]
+        path = save(name, originals, [types.Tool.model_validate(t) for t in slim])
+    except (ValueError, RuntimeError) as e:
+        raise ToolError(str(e)) from e
+    return (
+        f"Saved {len(slim)} slim tool(s) to {path}. To use them, the user runs "
+        f"`slimproof apply {name}` in a terminal and restarts Claude Code."
+    )

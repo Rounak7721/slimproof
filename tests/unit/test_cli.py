@@ -142,3 +142,38 @@ def test_audit_exits_2_on_broken_config(tmp_path: Path) -> None:
 
     assert result.exit_code == 2
     assert "must hold a JSON object" in result.output
+
+
+def test_proxy_exits_2_when_the_server_cannot_start(tmp_path: Path) -> None:
+    result = CliRunner().invoke(app, ["proxy", "x", "--", "slimproof-no-such-cmd"])
+
+    assert result.exit_code == 2
+    assert "Can't start slimproof-no-such-cmd" in result.output
+
+
+def test_apply_and_revert_edit_the_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+    config = tmp_path / ".mcp.json"
+    config.write_text(json.dumps({"mcpServers": {"fs": {"command": "npx", "args": ["pkg"]}}}))
+    options = ["fs", "--config", str(config)]
+
+    assert CliRunner().invoke(app, ["apply", *options]).exit_code == 2  # nothing saved yet
+    overrides = tmp_path / ".slimproof" / "overrides" / "fs.json"
+    overrides.parent.mkdir(parents=True)
+    overrides.write_text(json.dumps({"version": 1, "server": "fs", "tools": {}}))
+
+    result = CliRunner().invoke(app, ["apply", *options, "--launcher", "my-slimproof --x"])
+    assert result.exit_code == 0, result.output
+    entry = json.loads(config.read_text())["mcpServers"]["fs"]
+    assert [entry["command"], *entry["args"]] == [
+        "my-slimproof",
+        "--x",
+        "proxy",
+        "fs",
+        "--",
+        "npx",
+        "pkg",
+    ]
+
+    assert CliRunner().invoke(app, ["revert", *options]).exit_code == 0
+    assert json.loads(config.read_text())["mcpServers"]["fs"] == {"command": "npx", "args": ["pkg"]}
