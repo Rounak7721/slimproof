@@ -22,14 +22,6 @@ jobs:
             - run: uv run pyright
             - run: uv run pytest
 
-            - name: Show how Claude Code keys projects on Windows (temporary)
-              if: runner.os == 'Windows' && matrix.python == '3.12'
-              continue-on-error: true
-              shell: bash
-              run: |
-                  npm install -g @anthropic-ai/claude-code
-                  claude mcp add -s local slimproof-probe -- echo hi
-                  uv run python -c "import json, pathlib; print(list(json.loads((pathlib.Path.home() / '.claude.json').read_text())['projects']))"
     build:
         runs-on: ubuntu-latest
         steps:
