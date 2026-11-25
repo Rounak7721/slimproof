@@ -59,7 +59,7 @@ To go back to the original tools, run `uvx slimproof revert <server-name>` and r
 ## How the proxy keeps you safe
 
 - `apply` changes only that server's entry in your config. It adds `uvx slimproof proxy <name> --` in front of the real command. Your `env` and `${VAR}` values stay as they are.
-- Before each change, slimproof saves a backup of the config to `~/.slimproof/backups/`.
+- Before each change, slimproof saves a backup of the config to `~/.slimproof/backups/`. A backup is a full copy of the config, so it can contain API keys and tokens. Keep the folder private, and delete old backups when you no longer need them.
 - The proxy changes only the replies to `tools/list`. Tool calls, resources, prompts and all other messages pass through unchanged.
 - If a server changes a tool after you slimmed it, the proxy serves the original tool and logs a warning. Run `/slimproof` again to slim the new version.
 - If the overrides file is missing or broken, the proxy serves the original tools.
@@ -69,6 +69,7 @@ To go back to the original tools, run `uvx slimproof revert <server-name>` and r
 - The proxy works with **local stdio servers** in your own MCP configs. These include packages that you start with `npx`, `uvx` or `docker`, and your own scripts.
 - Servers from **plugins** and **remote HTTP servers** can't use the proxy yet. You can audit and slim them, then paste the slim descriptions into the server's source. Proxy support for them is planned.
 - Remote servers that need an OAuth login are skipped in the audit.
+- After `apply`, the audit measures the slim tools that the proxy serves, not the originals. To see the original cost, run `slimproof revert <server-name>` first.
 
 ## Commands
 

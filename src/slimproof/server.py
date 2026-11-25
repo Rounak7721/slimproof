@@ -75,14 +75,18 @@ async def save_overrides(
 ) -> str:
     """Save slim tools of configured server `name` for the proxy; guards them against live tools."""
     try:
-        server = real_server(find_server(name, _paths(config_path)))
+        configured = find_server(name, _paths(config_path))
+        server = real_server(configured)
         if isinstance(server, HttpServer):
             raise ValueError(f"'{name}' is a remote HTTP server; the proxy can't serve those yet.")
         originals = [types.Tool.model_validate(t) for t in await tool_definitions(server)]
         path = save(name, originals, [types.Tool.model_validate(t) for t in slim])
     except (ValueError, RuntimeError) as e:
         raise ToolError(str(e)) from e
+    saved = f"Saved {len(slim)} slim tool(s) to {path}."
+    if server is not configured:  # already starts through the proxy
+        return f"{saved} '{name}' already uses the proxy; the user only restarts Claude Code."
     return (
-        f"Saved {len(slim)} slim tool(s) to {path}. To use them, the user runs "
+        f"{saved} To use them, the user runs "
         f"`slimproof apply {name}` in a terminal and restarts Claude Code."
     )

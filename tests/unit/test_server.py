@@ -102,3 +102,26 @@ async def test_save_overrides_saves_stdio_and_refuses_http(
     assert (tmp_path / ".slimproof" / "overrides" / "fx.json").is_file()
     assert http.is_error
     assert "remote HTTP server" in http.content[0].text  # type: ignore[union-attr]
+
+
+@pytest.mark.anyio
+async def test_save_overrides_on_proxied_server_only_asks_for_restart(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+    proxied = ["slimproof", "proxy", "fx", "--", sys.executable, str(FIXTURE)]
+    config = tmp_path / ".mcp.json"
+    config.write_text(json.dumps({"mcpServers": {"fx": {"command": "uvx", "args": proxied}}}))
+
+    async with Client(mcp) as client:
+        tools = await client.call_tool("get_tools", {"name": "fx", "config_path": str(config)})
+        ping = next(t for t in json.loads(tools.content[0].text) if t["name"] == "ping")  # type: ignore[union-attr]
+        saved = await client.call_tool(
+            "save_overrides",
+            {"name": "fx", "slim": [{**ping, "description": "Pong."}], "config_path": str(config)},
+        )
+
+    assert not saved.is_error, saved.content
+    text = saved.content[0].text  # type: ignore[union-attr]
+    assert "already uses the proxy" in text
+    assert "slimproof apply" not in text
