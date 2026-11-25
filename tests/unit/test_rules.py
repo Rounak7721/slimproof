@@ -103,3 +103,8 @@ def test_sp008_flags_near_identical_tools_only() -> None:
 def test_check_returns_findings_with_ids() -> None:
     findings = check("fs", [_tool("Use this tool to read."), _tool("Read.")])
     assert findings == [Finding("SP001", "fs", "read", "opens with filler 'use this tool to'")]
+
+
+def test_param_rules_skip_boolean_schemas() -> None:
+    tool = _params_tool({"anything": True, "path": {"type": "string"}})
+    assert sp003(tool) == [] and sp004(tool) == []

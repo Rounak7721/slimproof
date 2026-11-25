@@ -83,8 +83,11 @@ LIST_WORDS = {"one", "or", "and", "either", "must", "be", "can", "values", "opti
 
 
 def _params(tool: types.Tool) -> dict[str, dict[str, Any]]:
-    """Top-level parameters of `tool`: name -> its JSON Schema."""
-    return tool.input_schema.get("properties", {})
+    """Top-level parameters of `tool`: name -> its JSON Schema (`true`/`false` schemas skipped)."""
+    properties = tool.input_schema.get("properties")
+    if not isinstance(properties, dict):
+        return {}
+    return {name: schema for name, schema in properties.items() if isinstance(schema, dict)}
 
 
 def _words(text: str) -> set[str]:
@@ -100,10 +103,8 @@ def _sentences(text: str, min_chars: int = 40) -> list[str]:
 
 def sp001(tool: types.Tool) -> list[str]:
     """Description opens with filler like "This tool allows you to"."""
-
     desc = (tool.description or "").strip().lower()
     match = next((f for f in FILLER if desc.startswith(f)), None)
-
     return [f"opens with filler '{match}'"] if match else []
 
 
@@ -167,7 +168,7 @@ def sp007(tools: list[types.Tool]) -> list[tuple[str, str]]:
 def sp008(tools: list[types.Tool], threshold: float = 0.85) -> list[tuple[str, str]]:
     """Two tools have near-identical descriptions, so the model may pick the wrong one."""
     found = []
-    for a, b in combinations(tools, 2):  # ponytail: O(n^2) pairs, fine for a few hundred tools
+    for a, b in combinations(tools, 2):  # O(n^2) pairs: fine for a few hundred tools
         if not (a.description and b.description):
             continue
         ratio = SequenceMatcher(None, a.description, b.description).ratio()
@@ -193,7 +194,6 @@ SERVER_RULES = [
 
 def check(server: str, tools: list[types.Tool]) -> list[Finding]:
     """Run every rule on every tool of `server`."""
-
     per_tool = [
         Finding(rule.id, server, tool.name, msg)
         for tool in tools

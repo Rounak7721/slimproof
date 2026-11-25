@@ -8,7 +8,16 @@ from mcp import types
 from slimproof.core.tokens import DEFAULT_RATIO, count_tokens
 
 WORDING = {"description", "title"}
-NAME_MAPS = {"properties", "patternProperties", "$defs", "definitions"}
+# Keywords whose keys are names chosen by the server (a parameter called "title"), not wording.
+NAME_MAPS = {
+    "properties",
+    "patternProperties",
+    "$defs",
+    "definitions",
+    "dependentSchemas",
+    "dependentRequired",
+    "dependencies",
+}
 DATA = {"default", "enum", "const", "examples"}
 
 

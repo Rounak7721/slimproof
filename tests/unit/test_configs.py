@@ -115,3 +115,22 @@ def test_find_server_by_name(tmp_path: Path) -> None:
     assert find_server("fs", [config]) == StdioServerParameters(command="npx", args=[])
     with pytest.raises(ValueError, match="'nope'"):
         find_server("nope", [config])
+
+
+def test_load_servers_skips_invalid_entries(tmp_path: Path) -> None:
+    config = tmp_path / ".mcp.json"
+    entries = {"no_url": {"type": "http"}, "bad_env": {"command": "x", "env": ["A=1"]}}
+    config.write_text(json.dumps({"mcpServers": entries}), encoding="utf-8")
+
+    servers, skipped = load_servers([config])
+
+    assert servers == {}
+    assert skipped == {"no_url": "invalid config entry", "bad_env": "invalid config entry"}
+
+
+def test_load_servers_names_the_broken_file(tmp_path: Path) -> None:
+    config = tmp_path / ".mcp.json"
+    config.write_text("{not json", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="not valid JSON"):
+        load_servers([config])

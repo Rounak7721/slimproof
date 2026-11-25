@@ -68,7 +68,8 @@ def main() -> None:
 @app.command()
 def audit(
     config: Annotated[
-        list[Path] | None, typer.Option(help="Config file(s). Default: auto-detect.")
+        list[Path] | None,
+        typer.Option(exists=True, dir_okay=False, help="Config file(s). Default: auto-detect."),
     ] = None,
     fmt: FormatOption = "table",
     exact: ExactOption = False,
@@ -83,7 +84,12 @@ def audit(
         typer.echo("No MCP config files found. Pass one with --config.", err=True)
         raise typer.Exit(2)
 
-    _print_result(asyncio.run(run_audit(paths, exact, ratio)), fmt, budget, window)
+    try:
+        result = asyncio.run(run_audit(paths, exact, ratio))
+    except (OSError, ValueError) as e:  # unreadable config; server failures are in the result
+        typer.echo(f"Can't read the MCP config: {e}", err=True)
+        raise typer.Exit(2) from None
+    _print_result(result, fmt, budget, window)
 
 
 @app.command()

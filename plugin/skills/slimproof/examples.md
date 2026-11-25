@@ -1,6 +1,6 @@
 # Examples
 
-Real rewrites from an Obsidian MCP server (`~` = chars ÷ 4 estimate).
+Real rewrites from an Obsidian MCP server (`~` = estimate at 4 characters per token).
 
 ## 1. Tutorial → essentials (SP006): `search_query`, ~462 → ~143 tokens
 Before: one sentence of purpose, then a full example note, a list of 7 JsonLogic operators, 2 extra operators, the return shape and 5 examples.

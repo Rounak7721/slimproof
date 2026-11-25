@@ -1,12 +1,15 @@
 import json
+import sys
 from functools import partial
 from pathlib import Path
 
 import httpx2
 import pytest
+from mcp import StdioServerParameters
 from mcp.server.mcpserver import MCPServer
 
 from slimproof.core import audit as audit_module
+from slimproof.core import client as client_module
 from slimproof.core.audit import _error_message, audit, audit_one, audit_server, tool_definitions
 from slimproof.core.client import HttpServer, list_tools
 
@@ -69,3 +72,24 @@ async def test_tool_definitions_returns_full_tools() -> None:
 
     assert tool["name"] == "ping" and tool["description"] == "Reply with pong."
     assert "inputSchema" in tool
+
+
+def test_error_message_masks_url_query_and_password() -> None:
+    remote = HttpServer("https://me:pw-secret@x.com/mcp?key=k%2Bsecret&mode=1")
+    msg = _error_message(
+        ValueError("GET https://me:pw-secret@x.com/mcp?key=k%2Bsecret, k+secret"),
+        audit_module._secrets(remote),
+    )
+    assert "secret" not in msg
+
+
+@pytest.mark.anyio
+async def test_audit_one_times_out_on_silent_server(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(client_module, "TIMEOUT", 1)
+    silent = StdioServerParameters(
+        command=sys.executable, args=["-c", "import time; time.sleep(30)"]
+    )
+
+    result = await audit_one("silent", silent)
+
+    assert "timed out" in result.errors["silent"]

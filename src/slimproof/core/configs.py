@@ -33,6 +33,17 @@ def _server(entry: dict[str, Any]) -> StdioServerParameters | HttpServer | str:
     return f"{entry.get('type', 'unknown')} servers not supported yet"
 
 
+def _read(path: Path) -> dict[str, Any]:
+    """The JSON object in config file `path`; a clear ValueError if it isn't one."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise ValueError(f"{path} is not valid JSON ({e})") from None
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must hold a JSON object")
+    return data
+
+
 def load_servers(
     paths: list[Path], cwd: Path | None = None
 ) -> tuple[dict[str, StdioServerParameters | HttpServer], dict[str, str]]:
@@ -46,7 +57,7 @@ def load_servers(
     local: dict[str, Any] = {}
     shared: dict[str, Any] = {}
     for path in paths:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        data = _read(path)
         projects = data.get("projects", {})
         project = projects.get(here.as_posix()) or projects.get(str(here), {})
         local = {**project.get("mcpServers", {}), **local}  # earlier paths win
@@ -55,7 +66,10 @@ def load_servers(
     servers: dict[str, StdioServerParameters | HttpServer] = {}
     skipped: dict[str, str] = {}
     for name, entry in {**shared, **local}.items():
-        server = _server(entry)
+        try:
+            server = _server(entry)
+        except (AttributeError, KeyError, TypeError, ValueError):  # wrong shape or field type
+            server = "invalid config entry"
         if isinstance(server, str):
             skipped[name] = server
         else:

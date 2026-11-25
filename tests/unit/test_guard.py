@@ -64,3 +64,11 @@ def test_without_wording_keeps_params_named_description() -> None:
 
     assert bare.description is None
     assert bare.input_schema["properties"] == {"description": {"type": "string"}}
+
+
+def test_dependent_required_keys_are_names() -> None:
+    def tool(deps: dict[str, Any]) -> types.Tool:
+        schema = {"type": "object", "properties": {}, "dependentRequired": deps}
+        return types.Tool(name="t", input_schema=schema)
+
+    assert guard(tool({"title": ["body"]}), tool({})) != []

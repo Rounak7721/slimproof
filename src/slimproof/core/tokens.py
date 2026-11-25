@@ -44,7 +44,7 @@ def count_claude_tokens(tools: list[types.Tool], model: str = CLAUDE_MODEL) -> l
     except ImportError as e:
         raise RuntimeError("Install the extra: pip install 'slimproof[claude]'") from e
 
-    # ponytail: one call per tool, retried on per-minute limits; batch if servers get huge
+    # One call per tool; max_retries rides out per-minute rate limits on big servers.
     client = Anthropic(max_retries=5)
 
     messages: list[MessageParam] = [{"role": "user", "content": "hi"}]
@@ -65,5 +65,5 @@ def count_tokens(
 ) -> list[int]:
     """Tokens for each tool: exact via Claude's API, or estimated as characters / `ratio`."""
     if exact:
-        return count_claude_tokens(tools)  # ponytail: sync calls; fine for the CLI
+        return count_claude_tokens(tools)  # blocking calls; fine for a CLI run
     return [estimate_tokens(tool_text(t), ratio) for t in tools]

@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+from urllib.parse import parse_qsl, urlsplit
 
 from mcp import StdioServerParameters
 from mcp.server.mcpserver import MCPServer
@@ -58,10 +59,14 @@ async def audit_server(
 
 
 def _secrets(server: StdioServerParameters | HttpServer) -> list[str]:
-    """Values that must never be printed: stdio env values and HTTP header values."""
-    values = (
-        server.headers.values() if isinstance(server, HttpServer) else (server.env or {}).values()
-    )
+    """Values that must never be printed: stdio env values, HTTP headers, URL query and password."""
+    if isinstance(server, HttpServer):
+        url = urlsplit(server.url)
+        raw_query = [part.partition("=")[2] for part in url.query.split("&")]  # as printed
+        decoded = [v for _, v in parse_qsl(url.query)]
+        values = [*server.headers.values(), *raw_query, *decoded, url.password or ""]
+    else:
+        values = list((server.env or {}).values())
     return [word for v in values for word in v.split()]
 
 
@@ -77,7 +82,7 @@ def _error_message(e: BaseException, secrets: list[str]) -> str:
     e = _root(e)
     msg = str(e) if isinstance(e, NeedsLogin) else f"{type(e).__name__}: {e}"
     for secret in secrets:
-        if len(secret) >= 4:  # ponytail: skip short values like "1" so messages stay readable
+        if len(secret) >= 4:  # short values like "1" would mask every digit
             msg = msg.replace(secret, "***")
     return msg
 
@@ -117,7 +122,8 @@ async def audit(
     servers, skipped = load_servers(paths)
     result.skipped.update(skipped)
     for name, server in servers.items():
-        # ponytail: one server at a time; run concurrently if audits feel slow
+        # One server at a time: simple, and child processes don't compete. Run them
+        # concurrently if audits of many servers feel slow.
         one = await audit_one(name, server, exact, ratio)
         result.costs.extend(one.costs)
         result.findings.extend(one.findings)

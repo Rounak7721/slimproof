@@ -8,6 +8,8 @@ from typer.testing import CliRunner
 from slimproof.cli import app
 from slimproof.core import tokens as tokens_module
 
+FIXTURE = Path(__file__).parent.parent / "fixtures" / "bloated_server.py"
+
 
 def test_audit_json_reports_broken_server(tmp_path: Path) -> None:
     config = tmp_path / ".mcp.json"
@@ -17,9 +19,6 @@ def test_audit_json_reports_broken_server(tmp_path: Path) -> None:
 
     assert result.exit_code == 2
     assert json.loads(result.stdout)["errors"].keys() == {"broken"}
-
-
-FIXTURE = Path(__file__).parent.parent / "fixtures" / "bloated_server.py"
 
 
 def test_server_ranks_stdio_tools() -> None:
@@ -133,3 +132,13 @@ def test_compare_exits_2_on_bad_file(tmp_path: Path) -> None:
 
     assert result.exit_code == 2
     assert "JSON list of tools" in result.output
+
+
+def test_audit_exits_2_on_broken_config(tmp_path: Path) -> None:
+    config = tmp_path / ".mcp.json"
+    config.write_text("[]", encoding="utf-8")
+
+    result = CliRunner().invoke(app, ["audit", "--config", str(config)])
+
+    assert result.exit_code == 2
+    assert "must hold a JSON object" in result.output

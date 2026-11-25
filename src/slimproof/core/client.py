@@ -1,6 +1,5 @@
 """Connect to an MCP server and list its tools."""
 
-import asyncio
 import re
 from dataclasses import dataclass, field
 from urllib.parse import urlsplit
@@ -10,10 +9,9 @@ from mcp import Client, StdioServerParameters, types
 from mcp.client.streamable_http import streamable_http_client
 from mcp.server.mcpserver import MCPServer
 
-FILESYSTEM_SERVER = StdioServerParameters(
-    command="npx",
-    args=["-y", "@modelcontextprotocol/server-filesystem", "."],
-)
+# Seconds to wait for each MCP reply, the handshake included. A first `npx -y` run
+# downloads the package inside this time, so keep it generous.
+TIMEOUT = 60
 
 
 @dataclass(frozen=True)
@@ -42,7 +40,7 @@ def server_from(
 ) -> tuple[str, StdioServerParameters | HttpServer]:
     """Build a server from a stdio command or an HTTP url (exactly one): (display name, server)."""
     if bool(command) == bool(url):
-        raise ValueError("Give either a stdio command or a url, not both.")
+        raise ValueError("Give exactly one of a stdio command or a url.")
     if url:
         return url_name(url), HttpServer(url)
     assert command  # narrows the type for pyright
@@ -95,34 +93,27 @@ async def list_tools(
     `transport` replaces the network layer for HTTP servers (tests pass an in-process app).
     """
     if not isinstance(server, HttpServer):
-        return await _all_tools(Client(server))
+        return await _all_tools(Client(server, read_timeout_seconds=TIMEOUT))
     async with httpx2.AsyncClient(
         headers=server.headers,
         transport=transport,
-        timeout=30,
+        timeout=TIMEOUT,
         event_hooks={"response": [_raise_on_401]},
     ) as http:
-        return await _all_tools(Client(streamable_http_client(server.url, http_client=http)))
+        mcp_transport = streamable_http_client(server.url, http_client=http)
+        return await _all_tools(Client(mcp_transport, read_timeout_seconds=TIMEOUT))
 
 
 async def _all_tools(client: Client) -> list[types.Tool]:
     """Do the MCP handshake on `client` and page through `tools/list`."""
     tools: list[types.Tool] = []
+    seen: set[str] = set()  # a buggy server that repeats a cursor would loop forever
     async with client:
         cursor: str | None = None
         while True:
             page = await client.list_tools(cursor=cursor)
             tools.extend(page.tools)
             cursor = page.next_cursor
-            if cursor is None:
+            if cursor is None or cursor in seen:
                 return tools
-
-
-async def main() -> None:
-    """Print each tool on the filesystem server."""
-    for tool in await list_tools(FILESYSTEM_SERVER):
-        print(f"{tool.name}: {tool.description}")
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
+            seen.add(cursor)
