@@ -8,7 +8,7 @@ jobs:
     check:
         strategy:
             matrix:
-                os: [ubuntu-latest, windows-latest]
+                os: [ubuntu-latest, windows-latest, macos-latest]
                 python: ["3.10", "3.12"]
         runs-on: ${{ matrix.os }}
         steps:
@@ -21,3 +21,27 @@ jobs:
             - run: uv run ruff format --check .
             - run: uv run pyright
             - run: uv run pytest
+
+            - name: Show how Claude Code keys projects on Windows (temporary)
+              if: runner.os == 'Windows' && matrix.python == '3.12'
+              continue-on-error: true
+              shell: bash
+              run: |
+                  npm install -g @anthropic-ai/claude-code
+                  claude mcp add -s local slimproof-probe -- echo hi
+                  uv run python -c "import json, pathlib; print(list(json.loads((pathlib.Path.home() / '.claude.json').read_text())['projects']))"
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+            - uses: astral-sh/setup-uv@v10.4.0
+            - run: uv build
+            - run: uvx --from dist/*.whl slimproof --help
+
+    plugin:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+            - run: npm install -g @anthropic-ai/claude-code
+            - run: claude plugin validate . --strict
+            - run: claude plugin validate plugin --strict
