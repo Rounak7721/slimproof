@@ -132,3 +132,5 @@ Exit codes: `0` OK, `1` over budget or a guard problem, `2` bad input or a serve
 ## License
 
 MIT
+
+<!-- mcp-name: io.github.rounak7721/slimproof -->
