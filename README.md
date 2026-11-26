@@ -15,6 +15,16 @@
 
 Every MCP server you add sends its tool definitions to the model in each session. Long descriptions use context and cost tokens before you type anything. slimproof finds the heaviest tools, helps Claude rewrite their descriptions, and checks that only the wording changed. Then Claude Code can use the slim versions.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Rounak7721/slimproof/main/docs/demo.gif" width="800" alt="slimproof audits 40 MCP tools (~24,761 tokens), Claude slims Desktop Commander's descriptions by 61% in Claude Code, and after apply the audit shows ~12,595 tokens">
+</p>
+
+<p align="center">
+  <a href="https://youtu.be/w__NH_zfuFQ"><img src="https://raw.githubusercontent.com/Rounak7721/slimproof/main/docs/demo-video.png" width="480" alt="Watch the full demo on YouTube (1:23, with captions)"></a>
+  <br>
+  <a href="https://youtu.be/w__NH_zfuFQ">Watch the full demo on YouTube</a> (1:23, with captions)
+</p>
+
 ## What it does
 
 1. **Audit.** Rank every tool in your MCP configs by token cost. Flag common bloat: filler openings, text that only repeats a name or type, extra markdown, very long descriptions, sentences repeated across tools, and tools that look almost the same.
@@ -41,6 +51,7 @@ Useful options:
 
 - `--format table|json|markdown`: the output format.
 - `--exact`: exact Claude token counts. This uses the free `count_tokens` API and needs `ANTHROPIC_API_KEY`. Without it, counts are estimates and show `~`.
+- `--top 10`: show only the 10 heaviest tools. The total still counts every tool.
 - `--budget 5 --window 200000`: exit with code 1 if the tools use more than 5% of the context window. Use this in CI.
 
 ## Slim a server in Claude Code

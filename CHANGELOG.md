@@ -2,6 +2,23 @@
 
 All notable changes are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] - 2026-11-26
+
+### Added
+
+- `--top N` for `audit` and `server`: show only the N heaviest tools and N findings. One row sums up the other tools, and the total still counts every tool. JSON output always has everything.
+- A closing `Total:` line after the findings, so you see the totals without scrolling up. When there are many findings, the line suggests `--top 10`.
+- A demo GIF in the README, and a link to the full demo video on YouTube.
+
+### Changed
+
+- The audit no longer shows the log lines that servers write to stderr. If a server fails, the audit shows its last 5 log lines below the error, to help you find the cause.
+- SP007 quotes the repeated sentence up to a whole word and adds `…` when it cuts the sentence.
+
+### Fixed
+
+- The package now includes the `LICENSE` file.
+
 ## [0.1.0] - 2026-11-26
 
 The first release.
@@ -25,4 +42,5 @@ The first release.
 - The proxy works only with local stdio servers. Plugin servers and remote HTTP servers can't use it yet.
 - `compare --exact` shows a traceback if the API call fails.
 
+[0.1.1]: https://github.com/Rounak7721/slimproof/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Rounak7721/slimproof/releases/tag/v0.1.0

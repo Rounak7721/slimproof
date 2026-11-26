@@ -8,7 +8,13 @@ from urllib.parse import parse_qsl, urlsplit
 from mcp import StdioServerParameters
 from mcp.server.mcpserver import MCPServer
 
-from slimproof.core.client import HttpServer, NeedsLogin, list_tools
+from slimproof.core.client import (
+    HttpServer,
+    NeedsLogin,
+    ServerFailed,
+    list_tools,
+    root_error,
+)
 from slimproof.core.configs import load_servers
 from slimproof.core.guard import without_wording
 from slimproof.core.rules import Finding, check
@@ -70,17 +76,10 @@ def _secrets(server: StdioServerParameters | HttpServer) -> list[str]:
     return [word for v in values for word in v.split()]
 
 
-def _root(e: BaseException) -> BaseException:
-    """The first real error inside nested async exception groups."""
-    while sub := getattr(e, "exceptions", None):
-        e = sub[0]
-    return e
-
-
 def _error_message(e: BaseException, secrets: list[str]) -> str:
     """Readable error text: unwrap async exception groups, then mask secret values."""
-    e = _root(e)
-    msg = str(e) if isinstance(e, NeedsLogin) else f"{type(e).__name__}: {e}"
+    e = root_error(e)
+    msg = str(e) if isinstance(e, NeedsLogin | ServerFailed) else f"{type(e).__name__}: {e}"
     for secret in secrets:
         if len(secret) >= 4:  # short values like "1" would mask every digit
             msg = msg.replace(secret, "***")
@@ -98,7 +97,7 @@ async def audit_one(
         result = await audit_server(name, server, exact, ratio)
     except Exception as e:
         msg = {name: _error_message(e, _secrets(server))}
-        if isinstance(_root(e), NeedsLogin):
+        if isinstance(root_error(e), NeedsLogin):
             return AuditResult(costs=[], errors={}, skipped=msg, exact=exact)
         return AuditResult(costs=[], errors=msg, skipped={}, exact=exact)
     result.costs.sort(key=lambda c: c.tokens, reverse=True)

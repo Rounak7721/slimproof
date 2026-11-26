@@ -185,3 +185,17 @@ def test_version_prints_package_version() -> None:
 
     assert result.exit_code == 0
     assert result.stdout.strip() == f"slimproof {version('slimproof')}"
+
+
+def test_server_top_shows_heaviest_tool_and_full_total() -> None:
+    full = CliRunner().invoke(
+        app, ["server", "--format", "json", "--", sys.executable, str(FIXTURE)]
+    )
+    total = sum(c["tokens"] for c in json.loads(full.stdout)["costs"])
+
+    result = CliRunner().invoke(app, ["server", "--top", "1", "--", sys.executable, str(FIXTURE)])
+
+    assert result.exit_code == 0
+    assert "search" in result.stdout
+    assert "1 more tools" in result.stdout
+    assert f"{total:,}" in result.stdout

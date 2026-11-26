@@ -1,11 +1,14 @@
 """Connect to an MCP server and list its tools."""
 
 import re
+import tempfile
 from dataclasses import dataclass, field
+from typing import TextIO, cast
 from urllib.parse import urlsplit
 
 import httpx2
 from mcp import Client, StdioServerParameters, types
+from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamable_http_client
 from mcp.server.mcpserver import MCPServer
 
@@ -20,6 +23,16 @@ class HttpServer:
 
     url: str
     headers: dict[str, str] = field(default_factory=dict)
+
+
+class ServerFailed(Exception):
+    """A stdio server failed; the message ends with the last lines it wrote to stderr."""
+
+
+def _tail(log: str, lines: int = 5, width: int = 200) -> str:
+    """The last non-empty `lines` of `log`, each cut to `width` chars."""
+    kept = [line[:width] for line in log.splitlines() if line.strip()][-lines:]
+    return "\n".join(f"  | {line}" for line in kept)
 
 
 class NeedsLogin(Exception):
@@ -92,6 +105,8 @@ async def list_tools(
 
     `transport` replaces the network layer for HTTP servers (tests pass an in-process app).
     """
+    if isinstance(server, StdioServerParameters):
+        return await _stdio_tools(server)
     if not isinstance(server, HttpServer):
         return await _all_tools(Client(server, read_timeout_seconds=TIMEOUT))
     async with httpx2.AsyncClient(
@@ -102,6 +117,29 @@ async def list_tools(
     ) as http:
         mcp_transport = streamable_http_client(server.url, http_client=http)
         return await _all_tools(Client(mcp_transport, read_timeout_seconds=TIMEOUT))
+
+
+async def _stdio_tools(server: StdioServerParameters) -> list[types.Tool]:
+    """Tools of a stdio server. Its stderr log stays hidden unless it fails."""
+    with tempfile.TemporaryFile("w+", encoding="utf-8", errors="replace") as log:
+        try:
+            # On Windows TemporaryFile is a wrapper, not a TextIO; it forwards fileno() etc.
+            transport = stdio_client(server, errlog=cast(TextIO, log))
+            return await _all_tools(Client(transport, read_timeout_seconds=TIMEOUT))
+        except Exception as e:
+            log.seek(0)
+            tail = _tail(log.read())
+            if not tail:
+                raise
+            root = root_error(e)
+            raise ServerFailed(f"{type(root).__name__}: {root}\n{tail}") from e
+
+
+def root_error(e: BaseException) -> BaseException:
+    """The first real error inside nested async exception groups."""
+    while sub := getattr(e, "exceptions", None):
+        e = sub[0]
+    return e
 
 
 async def _all_tools(client: Client) -> list[types.Tool]:

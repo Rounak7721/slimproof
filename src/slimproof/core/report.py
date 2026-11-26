@@ -7,6 +7,7 @@ from rich.table import Table
 
 from slimproof.core.audit import AuditResult, ToolCost
 from slimproof.core.guard import ToolChange
+from slimproof.core.rules import Finding
 from slimproof.core.tokens import CLAUDE_MODEL
 
 
@@ -22,11 +23,65 @@ def _headings(exact: bool) -> tuple[str, str]:
     return "MCP tool token cost (~ = estimate)", "~Tokens"
 
 
-def to_markdown(result: AuditResult) -> str:
+def heaviest(costs: list[ToolCost], top: int | None) -> tuple[list[ToolCost], list[ToolCost]]:
+    """(the `top` heaviest tools, the rest); all tools are shown when `top` is None."""
+    ranked = sorted(costs, key=lambda c: c.tokens, reverse=True)
+    return (ranked, []) if top is None else (ranked[:top], ranked[top:])
+
+
+def shown_findings(
+    findings: list[Finding], costs: list[ToolCost], top: int | None
+) -> list[Finding]:
+    """All findings, or with `top`: at most `top` findings, from the `top` heaviest tools."""
+    if top is None:
+        return findings
+    visible = {(c.server, c.tool) for c in heaviest(costs, top)[0]}
+    return [f for f in findings if (f.server, f.tool) in visible][:top]
+
+
+def summary(result: AuditResult, top: int | None) -> str:
+    """One closing line with the totals, so they stay visible after long findings."""
+    total = sum(c.tokens for c in result.costs)
+    described = sum(c.description_tokens for c in result.costs)
+    approx = "" if result.exact else "~"
+    line = (
+        f"Total: {len(result.costs)} tools, {approx}{total:,} tokens "
+        f"({described / total:.0%} in descriptions), {total / 200_000:.1%} of a 200K context "
+        f"window. {len(result.findings)} finding(s)."
+    )
+    if top is None and len(result.findings) > LONG_OUTPUT:
+        line += " Add --top 10 for a short view."
+    return line
+
+
+# Findings above this count scroll the table off a normal terminal.
+LONG_OUTPUT = 20
+
+
+def more_findings(hidden: int) -> str:
+    """The note under a --top report about findings it leaves out."""
+    return f"+ {hidden} more finding(s). Run without --top to see all."
+
+
+def _more_tools(rest: list[ToolCost]) -> tuple[str, int, int]:
+    """('… N more tools', tokens, description tokens) for the tools a --top report hides."""
+    return (
+        f"… {len(rest)} more tools",
+        sum(c.tokens for c in rest),
+        sum(c.description_tokens for c in rest),
+    )
+
+
+def to_markdown(result: AuditResult, top: int | None = None) -> str:
     """Audit results as Markdown, e.g. for a PR comment or a CI job summary."""
     title, column = _headings(result.exact)
     total = sum(c.tokens for c in result.costs)
     in_descriptions = sum(c.description_tokens for c in result.costs)
+    shown, rest = heaviest(result.costs, top)
+    more = []
+    if rest:
+        label, tokens, desc = _more_tools(rest)
+        more = [f"| | _{label}_ | {tokens:,} | {_part(desc, tokens)} |"]
     lines = [
         f"## {title}",
         "",
@@ -35,14 +90,19 @@ def to_markdown(result: AuditResult) -> str:
         *(
             f"| {_cell(c.server)} | {_cell(c.tool)} | {c.tokens:,} | "
             f"{_part(c.description_tokens, c.tokens)} |"
-            for c in result.costs
+            for c in shown
         ),
+        *more,
         f"| | **Total** | **{total:,}** | **{_part(in_descriptions, total)}** |",
         "",
         context_share(total),
     ]
+    findings = shown_findings(result.findings, result.costs, top)
+    finding_lines = [f"`{f.rule}` {f.server}/{f.tool}: {f.message}" for f in findings]
+    if hidden := len(result.findings) - len(findings):
+        finding_lines.append(more_findings(hidden))
     sections = [
-        ("Findings", [f"`{f.rule}` {f.server}/{f.tool}: {f.message}" for f in result.findings]),
+        ("Findings", finding_lines),
         ("Skipped", [f"**{name}**: {msg}" for name, msg in result.skipped.items()]),
         ("Failed", [f"**{name}**: {msg}" for name, msg in result.errors.items()]),
     ]
@@ -57,8 +117,11 @@ def _cell(text: str) -> str:
     return text.replace("|", "\\|")
 
 
-def to_table(costs: list[ToolCost], exact: bool = False) -> Table:
-    """Audit results as a rich table, one row per tool, plus a total."""
+def to_table(costs: list[ToolCost], exact: bool = False, top: int | None = None) -> Table:
+    """Audit results as a rich table: one row per tool (or the `top` heaviest), plus a total.
+
+    The total always counts every tool; hidden tools share one '… N more tools' row.
+    """
     title, column = _headings(exact)
     total = sum(c.tokens for c in costs)
     in_descriptions = sum(c.description_tokens for c in costs)
@@ -67,8 +130,12 @@ def to_table(costs: list[ToolCost], exact: bool = False) -> Table:
     table.add_column("Tool")
     table.add_column(column, justify="right")
     table.add_column("In descriptions", justify="right")
-    for c in costs:
+    shown, rest = heaviest(costs, top)
+    for c in shown:
         table.add_row(c.server, c.tool, f"{c.tokens:,}", _part(c.description_tokens, c.tokens))
+    if rest:
+        label, tokens, desc = _more_tools(rest)
+        table.add_row("", f"[dim]{label}", f"[dim]{tokens:,}", f"[dim]{_part(desc, tokens)}")
     table.add_row("", "[bold]Total", f"[bold]{total:,}", f"[bold]{_part(in_descriptions, total)}")
     return table
 

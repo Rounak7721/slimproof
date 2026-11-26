@@ -93,6 +93,13 @@ def test_sp007_flags_sentence_repeated_in_another_tool() -> None:
     assert [tool for tool, _ in sp007(tools)] == ["write"]
 
 
+def test_sp007_quote_ends_at_a_whole_word() -> None:
+    note = "Paths are relative to the vault root and must not start with a slash."
+    tools = [_named("read", note), _named("write", note)]
+    (_, message) = sp007(tools)[0]
+    assert message.endswith('"paths are relative to the vault root and must not start…"')
+
+
 def test_sp008_flags_near_identical_tools_only() -> None:
     a = _named("a", "Read a note from the vault.")
     b = _named("b", "Read a note from the vault!")
