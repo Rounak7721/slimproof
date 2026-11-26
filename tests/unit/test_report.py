@@ -1,7 +1,14 @@
 import json
 
 from slimproof.core.audit import AuditResult, ToolCost
-from slimproof.core.report import context_share, over_budget, to_json, to_markdown, to_table
+from slimproof.core.report import (
+    context_share,
+    over_budget,
+    summary,
+    to_json,
+    to_markdown,
+    to_table,
+)
 from slimproof.core.rules import Finding
 
 COSTS = [ToolCost("github", "create_issue", 120, 80), ToolCost("github", "ping", 10, 4)]
@@ -57,3 +64,35 @@ def test_to_markdown_has_table_total_and_sections() -> None:
 def test_to_markdown_escapes_pipes_in_cells() -> None:
     result = AuditResult([ToolCost("a|b", "t", 1, 0)], {}, {})
     assert "| a\\|b | t |" in to_markdown(result)
+
+
+def test_to_table_top_squeezes_the_rest_into_one_row() -> None:
+    table = to_table(COSTS, top=1)
+
+    assert table.row_count == 3  # heaviest tool, "… 1 more tools", total
+    assert "1 more tools" in str(list(table.columns[1].cells)[1])
+
+
+def test_to_markdown_top_keeps_full_total_and_counts_hidden_findings() -> None:
+    findings = [Finding("SP001", c.server, c.tool, "filler") for c in COSTS]
+    result = AuditResult(costs=COSTS, errors={}, skipped={}, findings=findings)
+    total = sum(c.tokens for c in COSTS)
+
+    md = to_markdown(result, top=1)
+
+    assert f"**{total:,}**" in md
+    assert "1 more tools" in md
+    assert md.count("`SP001`") == 1
+    assert "+ 1 more finding(s)" in md
+
+
+def test_summary_repeats_totals_and_suggests_top_for_long_output() -> None:
+    many = [Finding("SP001", "github", "ping", "filler")] * 21
+    result = AuditResult(costs=COSTS, errors={}, skipped={}, findings=many)
+
+    line = summary(result, top=None)
+
+    assert line.startswith("Total: 2 tools, ~130 tokens (65% in descriptions)")
+    assert "21 finding(s)" in line
+    assert line.endswith("Add --top 10 for a short view.")
+    assert "--top" not in summary(result, top=10)

@@ -1,6 +1,6 @@
 [project]
 name = "slimproof"
-version = "0.1.0"
+version = "0.1.1"
 description = "Audit and slim MCP tool definitions, with proof they still work."
 readme = "README.md"
 license = "MIT"

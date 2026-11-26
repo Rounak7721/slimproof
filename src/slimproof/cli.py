@@ -26,7 +26,10 @@ from slimproof.core.proxy import run_proxy
 from slimproof.core.report import (
     compare_markdown,
     compare_table,
+    more_findings,
     over_budget,
+    shown_findings,
+    summary,
     to_json,
     to_markdown,
     to_table,
@@ -54,6 +57,14 @@ RatioOption = Annotated[
 BudgetOption = Annotated[
     float | None,
     typer.Option(min=0, help="Exit 1 if tools use more than this % of the context window."),
+]
+
+TopOption = Annotated[
+    int | None,
+    typer.Option(
+        min=1,
+        help="Show only the N heaviest tools and N findings; totals count all. Not for json.",
+    ),
 ]
 
 WindowOption = Annotated[
@@ -98,6 +109,7 @@ def audit(
     ratio: RatioOption = DEFAULT_RATIO,
     budget: BudgetOption = None,
     window: WindowOption = 200_000,
+    top: TopOption = None,
 ) -> None:
     """Rank every tool in your MCP configs by token cost."""
     _check_exact(exact)
@@ -111,7 +123,7 @@ def audit(
     except (OSError, ValueError) as e:  # unreadable config; server failures are in the result
         typer.echo(f"Can't read the MCP config: {e}", err=True)
         raise typer.Exit(2) from None
-    _print_result(result, fmt, budget, window)
+    _print_result(result, fmt, budget, window, top)
 
 
 @app.command()
@@ -123,6 +135,7 @@ def server(
     ratio: RatioOption = DEFAULT_RATIO,
     budget: BudgetOption = None,
     window: WindowOption = 200_000,
+    top: TopOption = None,
 ) -> None:
     """Audit one server without a config: `server -- CMD ARGS...` or `server --url URL`."""
     _check_exact(exact)
@@ -131,7 +144,8 @@ def server(
     except ValueError as e:
         typer.echo(str(e), err=True)
         raise typer.Exit(2) from None
-    _print_result(asyncio.run(audit_one(name, params, exact, ratio)), fmt, budget, window)
+    result = asyncio.run(audit_one(name, params, exact, ratio))
+    _print_result(result, fmt, budget, window, top)
 
 
 @app.command()
@@ -229,17 +243,23 @@ def _print_result(
     fmt: Format,
     budget: float | None = None,
     window: int = 200_000,
+    top: int | None = None,
 ) -> None:
-    """Print `result` in `fmt`; exit 2 if any server failed, 1 if over budget."""
+    """Print `result` in `fmt`, `top` limiting rows; exit 2 on failure, 1 if over budget."""
     if fmt == "json":
         typer.echo(to_json(result))
     elif fmt == "markdown":
-        typer.echo(to_markdown(result), nl=False)
+        typer.echo(to_markdown(result, top), nl=False)
     else:
         if result.costs:
-            Console().print(to_table(result.costs, result.exact))
-            for f in result.findings:
+            Console().print(to_table(result.costs, result.exact, top))
+            findings = shown_findings(result.findings, result.costs, top)
+            for f in findings:
                 typer.echo(f"{f.rule} {f.server}/{f.tool}: {f.message}")
+            if hidden := len(result.findings) - len(findings):
+                typer.echo(more_findings(hidden))
+            if findings:  # the table's totals have scrolled up: repeat them last
+                typer.secho(summary(result, top), fg="green", bold=True)  # plain when piped
 
         for name, msg in result.skipped.items():
             typer.echo(f"{name}: skipped ({msg})", err=True)
