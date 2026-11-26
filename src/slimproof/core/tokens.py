@@ -39,24 +39,27 @@ def count_claude_tokens(tools: list[types.Tool], model: str = CLAUDE_MODEL) -> l
     if not tools:
         return []
     try:
-        from anthropic import Anthropic
+        from anthropic import Anthropic, AnthropicError
         from anthropic.types import MessageParam, ToolParam
     except ImportError as e:
         raise RuntimeError("Install the extra: pip install 'slimproof[claude]'") from e
 
-    # One call per tool; max_retries rides out per-minute rate limits on big servers.
-    client = Anthropic(max_retries=5)
-
     messages: list[MessageParam] = [{"role": "user", "content": "hi"}]
     anchor: ToolParam = {"name": "anchor", "input_schema": {"type": "object"}}
-    base = client.messages.count_tokens(model=model, messages=messages, tools=[anchor])
-
     fields = {"name", "description", "input_schema"}
-    counts = []
-    for tool in tools:
-        target = ToolParam(**tool.model_dump(include=fields, exclude_none=True))
-        full = client.messages.count_tokens(model=model, messages=messages, tools=[anchor, target])
-        counts.append(full.input_tokens - base.input_tokens)
+    try:
+        # One call per tool; max_retries rides out per-minute rate limits on big servers.
+        client = Anthropic(max_retries=5)
+        base = client.messages.count_tokens(model=model, messages=messages, tools=[anchor])
+        counts = []
+        for tool in tools:
+            target = ToolParam(**tool.model_dump(include=fields, exclude_none=True))
+            full = client.messages.count_tokens(
+                model=model, messages=messages, tools=[anchor, target]
+            )
+            counts.append(full.input_tokens - base.input_tokens)
+    except AnthropicError as e:  # bad key, no network, API down: one clear line, no traceback
+        raise RuntimeError(f"Can't count tokens with the Claude API: {e}") from None
     return counts
 
 

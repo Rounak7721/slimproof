@@ -2,6 +2,17 @@
 
 All notable changes are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- A Results section in the README, with the eval numbers and the tokens saved for each server.
+- `docs/architecture.md`: how slimproof works inside, with diagrams.
+
+### Fixed
+
+- `compare --exact` shows a one-line error and exits with code 2 when the Claude API call fails, for example with a wrong API key. Before, it showed a traceback.
+
 ## [0.1.1] - 2026-11-26
 
 ### Added

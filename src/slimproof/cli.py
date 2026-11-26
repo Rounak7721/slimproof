@@ -164,7 +164,11 @@ def compare(
         typer.echo(f"Can't read the tools: {e}", err=True)
         raise typer.Exit(2) from None
 
-    changes = compare_tools(before, after, exact, ratio)
+    try:
+        changes = compare_tools(before, after, exact, ratio)
+    except RuntimeError as e:  # --exact: the Claude API call failed
+        typer.echo(str(e), err=True)
+        raise typer.Exit(2) from None
     if fmt == "json":
         typer.echo(json.dumps([asdict(c) for c in changes], indent=2))
     elif fmt == "markdown":
