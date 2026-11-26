@@ -2,6 +2,19 @@
 
 All notable changes are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.1.2] - 2026-11-26
+
+### Added
+
+- A Results section in the README, with the eval numbers and the tokens saved for each server.
+- `docs/architecture.md`: how slimproof works inside, with diagrams.
+- `server.json` for the MCP Registry.
+- CI also tests Python 3.11 and 3.13, and the package lists all four supported versions.
+
+### Fixed
+
+- `compare --exact` shows a one-line error and exits with code 2 when the Claude API call fails, for example with a wrong API key. Before, it showed a traceback.
+
 ## [0.1.1] - 2026-11-26
 
 ### Added
@@ -42,5 +55,6 @@ The first release.
 - The proxy works only with local stdio servers. Plugin servers and remote HTTP servers can't use it yet.
 - `compare --exact` shows a traceback if the API call fails.
 
+[0.1.2]: https://github.com/Rounak7721/slimproof/releases/tag/v0.1.2
 [0.1.1]: https://github.com/Rounak7721/slimproof/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Rounak7721/slimproof/releases/tag/v0.1.0

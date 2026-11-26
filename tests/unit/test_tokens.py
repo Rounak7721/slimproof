@@ -17,6 +17,25 @@ def test_tool_text_has_only_model_visible_fields() -> None:
     assert tool_text(tool) == expected
 
 
+def test_claude_api_failure_is_one_clear_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    anthropic = pytest.importorskip("anthropic")
+
+    class Down:
+        """A client whose every API call fails, like a bad key or no network."""
+
+        def __init__(self, **_: object) -> None:
+            self.messages = self
+
+        def count_tokens(self, **_: object) -> None:
+            raise anthropic.AnthropicError("network down")
+
+    monkeypatch.setattr(anthropic, "Anthropic", Down)
+    tool = types.Tool(name="ping", description="Pong.", input_schema={"type": "object"})
+
+    with pytest.raises(RuntimeError, match="Can't count tokens with the Claude API: network down"):
+        count_claude_tokens([tool])
+
+
 @pytest.mark.skipif(not os.environ.get("ANTHROPIC_API_KEY"), reason="ANTHROPIC_API_KEY not found.")
 def test_claude_count_is_positive_and_small() -> None:
     tool = types.Tool(name="ping", description="Pong.", input_schema={"type": "object"})

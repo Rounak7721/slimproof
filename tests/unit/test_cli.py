@@ -125,6 +125,23 @@ def test_compare_exits_1_when_guard_fails(tmp_path: Path) -> None:
     assert json.loads(result.stdout)[0]["problems"] != []
 
 
+def test_compare_exact_exits_2_when_the_api_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def fail(tools: object) -> list[int]:
+        raise RuntimeError("Can't count tokens with the Claude API: network down")
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "fake")
+    monkeypatch.setattr(tokens_module, "count_claude_tokens", fail)
+    tools = _write_tools(tmp_path / "t.json", "Read a file.")
+
+    result = CliRunner().invoke(app, ["compare", "--exact", str(tools), str(tools)])
+
+    assert result.exit_code == 2
+    assert "network down" in result.output
+    assert "Traceback" not in result.output
+
+
 def test_compare_exits_2_on_bad_file(tmp_path: Path) -> None:
     bad = tmp_path / "bad.json"
     bad.write_text("{}", encoding="utf-8")

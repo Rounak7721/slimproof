@@ -9,15 +9,18 @@ jobs:
         steps:
             - uses: actions/checkout@v5
             - uses: astral-sh/setup-uv@v10.4.0
-            # Stop before publishing if the tag, pyproject, plugin.json and the .mcp.json pin disagree.
+            # Stop before publishing if the tag, pyproject, plugin.json, the .mcp.json pin and server.json disagree.
             - name: Check versions match the tag
               run: |
                   tag="${GITHUB_REF_NAME#v}"
                   py=$(uv version --short)
                   plugin=$(jq -r .version plugin/.claude-plugin/plugin.json)
                   pin=$(jq -r '.mcpServers.slimproof.args[0]' plugin/.mcp.json)
-                  echo "tag=$tag pyproject=$py plugin.json=$plugin pin=$pin"
-                  [ "$py" = "$tag" ] && [ "$plugin" = "$tag" ] && [ "$pin" = "slimproof==$tag" ]
+                  reg=$(jq -r .version server.json)
+                  reg_pkg=$(jq -r '.packages[0].version' server.json)
+                  echo "tag=$tag pyproject=$py plugin.json=$plugin pin=$pin server.json=$reg/$reg_pkg"
+                  [ "$py" = "$tag" ] && [ "$plugin" = "$tag" ] && [ "$pin" = "slimproof==$tag" ] \
+                    && [ "$reg" = "$tag" ] && [ "$reg_pkg" = "$tag" ]
             - name: Check the changelog has this version
               run: grep -q "^## \[${GITHUB_REF_NAME#v}\]" CHANGELOG.md
             - run: uv build

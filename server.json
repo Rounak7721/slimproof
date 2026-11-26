@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Rounak7721/slimproof",
+  "title": "slimproof",
+  "description": "Audit and slim MCP tool definitions, with proof they still work.",
+  "repository": {
+    "url": "https://github.com/Rounak7721/slimproof",
+    "source": "github"
+  },
+  "version": "0.1.2",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "slimproof",
+      "version": "0.1.2",
+      "runtimeHint": "uvx",
+      "packageArguments": [{ "type": "positional", "value": "mcp" }],
+      "transport": { "type": "stdio" }
+    }
+  ]
+}
