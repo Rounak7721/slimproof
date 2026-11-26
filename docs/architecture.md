@@ -358,7 +358,7 @@ slimproof reads files that can hold API keys. These rules apply everywhere:
 ```mermaid
 flowchart LR
     subgraph ci["CI: each push and PR"]
-        M["3 OS x 2 Python<br/>Linux, macOS, Windows<br/>3.10 and 3.12"] --> L["ruff check<br/>ruff format<br/>pyright<br/>pytest"]
+        M["3 OS x 4 Python<br/>Linux, macOS, Windows<br/>3.10 to 3.13"] --> L["ruff check<br/>ruff format<br/>pyright<br/>pytest"]
         BLD["uv build<br/>run the wheel"]
         PLG["claude plugin validate<br/>--strict"]
     end

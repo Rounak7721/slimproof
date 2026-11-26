@@ -45,7 +45,7 @@ We tested slimproof on 6 popular MCP servers with 180 requests, on Claude Haiku 
 
 The Claude API measured these token counts; they are not estimates. Servers with long descriptions save the most. Notion and GitHub use most of their tokens for JSON schema, and slimproof never changes the schema. Method, per-server accuracy and costs: [evals/results/v0.1.md](https://github.com/Rounak7721/slimproof/blob/main/evals/results/v0.1.md).
 
-CI runs the tests, type checks and lint on Linux, macOS and Windows, with Python 3.10 and 3.12.
+CI runs the tests, type checks and lint on Linux, macOS and Windows, with Python 3.10, 3.11, 3.12 and 3.13.
 
 ## What it does
 

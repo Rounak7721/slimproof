@@ -8,6 +8,8 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 - A Results section in the README, with the eval numbers and the tokens saved for each server.
 - `docs/architecture.md`: how slimproof works inside, with diagrams.
+- `server.json` for the MCP Registry.
+- CI also tests Python 3.11 and 3.13, and the package lists all four supported versions.
 
 ### Fixed
 
