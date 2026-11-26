@@ -1,6 +1,6 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.rounak7721/slimproof",
+  "name": "io.github.Rounak7721/slimproof",
   "title": "slimproof",
   "description": "Audit and slim MCP tool definitions, with proof they still work.",
   "repository": {

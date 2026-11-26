@@ -133,4 +133,4 @@ Exit codes: `0` OK, `1` over budget or a guard problem, `2` bad input or a serve
 
 MIT
 
-<!-- mcp-name: io.github.rounak7721/slimproof -->
+<!-- mcp-name: io.github.Rounak7721/slimproof -->
