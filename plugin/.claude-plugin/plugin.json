@@ -4,6 +4,8 @@
   "description": "Audit MCP tool definitions for token cost and slim bloated descriptions, with proof they still work.",
   "author": { "name": "Rounak Sonavane" },
   "homepage": "https://github.com/Rounak7721/slimproof",
+  "repository": "https://github.com/Rounak7721/slimproof",
+  "icon": "./.claude-plugin/icon.png",
   "license": "MIT",
   "keywords": ["mcp", "tokens", "context", "optimization"]
 }
