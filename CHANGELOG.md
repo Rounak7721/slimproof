@@ -2,7 +2,7 @@
 
 All notable changes are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.1.2] - 2026-11-26
 
 ### Added
 
@@ -55,5 +55,6 @@ The first release.
 - The proxy works only with local stdio servers. Plugin servers and remote HTTP servers can't use it yet.
 - `compare --exact` shows a traceback if the API call fails.
 
+[0.1.2]: https://github.com/Rounak7721/slimproof/releases/tag/v0.1.2
 [0.1.1]: https://github.com/Rounak7721/slimproof/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Rounak7721/slimproof/releases/tag/v0.1.0

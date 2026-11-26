@@ -1,5 +1,5 @@
 {
   "mcpServers": {
-    "slimproof": { "command": "uvx", "args": ["slimproof==0.1.1", "mcp"] }
+    "slimproof": { "command": "uvx", "args": ["slimproof==0.1.2", "mcp"] }
   }
 }
