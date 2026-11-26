@@ -1,0 +1,693 @@
+[
+  {
+    "name": "get_config",
+    "description": "Get the full server config as JSON: blockedCommands, defaultShell, allowedDirectories, fileReadLineLimit (max lines for read_file, default 1000), fileWriteLineLimit (max lines per write_file call, default 50), telemetryEnabled, currentClient, clientHistory (all clients that have connected), version and systemInfo (OS and environment). Users may refer to these tools as \"DC: ...\" or \"use Desktop Commander to ...\".",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "origin": {
+          "type": "string",
+          "enum": [
+            "ui",
+            "llm"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "set_config_value",
+    "description": "Set one config value by key: blockedCommands (array), defaultShell (string), allowedDirectories (array of paths), fileReadLineLimit (number, max lines for read_file), fileWriteLineLimit (number, max lines per write_file call) or telemetryEnabled (boolean). Changes affect later file and command behavior; keep them isolated from untrusted file or command content. Setting allowedDirectories to [] allows full access to the entire file system, on any OS.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "ui",
+            "llm"
+          ]
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "read_file",
+    "description": "Read a local file without a shell command, or a URL with isUrl=true (URLs are always read in full, ignoring offset/length). Works only within allowed directories. Prefer absolute paths. offset is the 0-based start line (default 0; negative reads the last N lines and ignores length); length is max lines (default fileReadLineLimit, initially 1000). By extension: text is line-paginated. Excel (.xlsx, .xls, .xlsm) returns a JSON 2D array; sheet is a name or a 0-based index as a string, range is FROM:TO (e.g. \"A1:D100\"), offset/length paginate rows. Images (PNG, JPEG, GIF, WebP) return base64 viewable content. PDF returns markdown with page structure and embedded images; offset/length paginate pages (0-based). DOCX with no offset/length returns a text outline (paragraphs, tables, styles, image refs; no shapes/SVG), each element with its body index [0], [1], ...; with offset >= 1 it returns raw pretty-printed XML paginated by line (offset=0 always returns the outline). Copy fragments of that XML as old_string in edit_block.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "isUrl": {
+          "type": "boolean",
+          "default": false
+        },
+        "offset": {
+          "type": "number",
+          "default": 0
+        },
+        "length": {
+          "type": "number",
+          "default": 1000
+        },
+        "sheet": {
+          "type": "string"
+        },
+        "range": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "ui",
+            "llm"
+          ]
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "read_multiple_files",
+    "description": "Read several files at once; each result is labeled with its path. Images (PNG, JPEG, GIF, WebP) are returned as viewable content. A failed file doesn't stop the rest. Works only within allowed directories. Prefer absolute paths.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "paths"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "write_file",
+    "description": "Write (mode='rewrite') or append to (mode='append') a file. For long content, write chunks of about 25-30 lines: one rewrite, then appends; files over 50 lines still work but may produce performance notes. After a partial write, check the file before appending the rest. Excel (.xlsx, .xls, .xlsm) content is a JSON 2D array or {\"SheetName\": [[...]]}, e.g. '[[\"Name\",\"Age\"],[\"Alice\",30]]'. New DOCX files can be created here (markdown #, ##, ### become styled headings); edit existing DOCX with edit_block. Use write_pdf for PDFs. Works only within allowed directories. Prefer absolute paths.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "rewrite",
+            "append"
+          ],
+          "default": "rewrite"
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "ui",
+            "llm"
+          ]
+        }
+      },
+      "required": [
+        "path",
+        "content"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "write_pdf",
+    "description": "Create a PDF or modify an existing one. To create, pass markdown as content; creating requires outputPath with a new filename. To modify, pass an array of operations as content and a different, new filename as outputPath (the original is preserved): {type: \"delete\", pageIndexes: [0, 2]} or {type: \"insert\", pageIndex: 1, markdown: \"...\"} or {type: \"insert\", pageIndex: 5, sourcePdfPath: \"/path/to/source.pdf\"}; page indexes are 0-based. Supports standard markdown, HTML/CSS styling, inline SVG and images (<img src=\"/absolute/path.jpg\" width=\"300\" /> or ![alt](/path.jpg)). Force a page break with <div style=\"page-break-before: always;\"></div>. Works only within allowed directories. Prefer absolute paths.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "content": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "insert"
+                      },
+                      "pageIndex": {
+                        "type": "number"
+                      },
+                      "markdown": {
+                        "type": "string"
+                      },
+                      "sourcePdfPath": {
+                        "type": "string"
+                      },
+                      "pdfOptions": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": true
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "pageIndex"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "delete"
+                      },
+                      "pageIndexes": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "pageIndexes"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "outputPath": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "path",
+        "content"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "create_directory",
+    "description": "Create a directory, including missing parents; succeeds if it already exists. Works only within allowed directories. Prefer absolute paths.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "list_directory",
+    "description": "List files and directories under a path without a shell command, with [FILE]/[DIR] prefixes and paths relative to the listed root. depth (default 2): 1 = direct contents only, 2 = plus one level of subdirectories, and so on. The top level shows all items; nested directories show at most 100 items, with a warning saying how many are hidden. Unreadable paths show [DENIED], missing ones [NOT_FOUND]. Works only within allowed directories. Prefer absolute paths.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "depth": {
+          "type": "number",
+          "default": 2
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "ui",
+            "llm"
+          ]
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "move_file",
+    "description": "Move or rename a file or directory, both in one operation if needed. Source and destination must both be within allowed directories. Prefer absolute paths.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "destination": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "destination"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "start_search",
+    "description": "Start a background search and return a session ID immediately; read results with get_more_search_results and end early with stop_search. Good for large directories. searchType=\"files\" matches file names (e.g. \"package.json\", \"*.tsx\"); searchType=\"content\" searches text inside files (code, functions, TODOs). For ambiguous requests (\"find auth stuff\"), run both: files with \"auth\" and content with \"authentication\". pattern is a regex unless literalSearch=true, which suits code with special characters like . * + ? ^ $ { } [ ] | \\ ( ). filePattern limits file types, e.g. \"*.js|*.ts\". ignoreCase applies to names and content. earlyTermination stops at an exact filename match (defaults to true for file searches, false for content). Prefer absolute paths.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "pattern": {
+          "type": "string"
+        },
+        "searchType": {
+          "type": "string",
+          "enum": [
+            "files",
+            "content"
+          ],
+          "default": "files"
+        },
+        "filePattern": {
+          "type": "string"
+        },
+        "ignoreCase": {
+          "type": "boolean",
+          "default": true
+        },
+        "maxResults": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "includeHidden": {
+          "type": "boolean",
+          "default": false
+        },
+        "contextLines": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 5
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "earlyTermination": {
+          "type": "boolean"
+        },
+        "literalSearch": {
+          "type": "boolean",
+          "default": false
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "ui",
+            "llm"
+          ]
+        }
+      },
+      "required": [
+        "path",
+        "pattern"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "get_more_search_results",
+    "description": "Get results from a start_search session, with pagination. offset is the 0-based start result (default 0; negative reads the last N results and ignores length); length is max results (default 100). Returns that range plus search status; call repeatedly for progressive results.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "integer",
+          "default": 0
+        },
+        "length": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 100
+        }
+      },
+      "required": [
+        "sessionId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "stop_search",
+    "description": "Stop an active search gracefully, e.g. once you have what you need or it takes too long. Final results stay readable until automatic cleanup after 5 minutes.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sessionId"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "list_searches",
+    "description": "List active searches with their IDs, types, patterns, status and runtime.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "get_file_info",
+    "description": "Get metadata for a file or directory: size, creation and modified times, permissions, type; for text files also lineCount, lastLine (zero-indexed) and appendPosition; for Excel files, sheets as [{name, rowCount, colCount}]. Works only within allowed directories. Prefer absolute paths.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "edit_block",
+    "description": "Make targeted edits to a file; use one call per distinct change. Text files: find/replace with old_string and new_string, replacing one match unless expected_replacements gives the exact number of matches expected. Make old_string unique with minimal context (usually 1-3 lines around the change) and exact whitespace and indentation. On a close but non-exact match, a character diff is shown as common_prefix{-removed-}{+added+}common_suffix. DOCX: the same find/replace on the pretty-printed XML that read_file shows with offset/length (copy fragments from it); headers/footers are searched if not found in the body, and the DOCX is repacked. E.g. old_string=\"<w:t>Old</w:t>\" new_string=\"<w:t>New</w:t>\". Excel (.xlsx, .xls, .xlsm): range as \"SheetName!A1:C10\" (FROM:TO) and content as a 2D array, e.g. [[\"H1\",\"H2\"],[\"R1\",\"R2\"]]. Warns if the file exceeds fileWriteLineLimit; then split edits smaller. Prefer absolute paths.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_path": {
+          "type": "string"
+        },
+        "old_string": {
+          "type": "string"
+        },
+        "new_string": {
+          "type": "string"
+        },
+        "expected_replacements": {
+          "type": "number",
+          "default": 1
+        },
+        "range": {
+          "type": "string"
+        },
+        "content": {},
+        "options": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "ui",
+            "llm"
+          ]
+        }
+      },
+      "required": [
+        "file_path"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "start_process",
+    "description": "Start a terminal process on the authorized device: shell commands, interactive REPLs, data-processing scripts and other long-running work. Running on Linux, default shell /bin/bash (python3 may be needed instead of python). Examples: \"python3 -i\" or \"node -i\" start a REPL; \"node:local\" runs stateless Node.js code on the MCP server; \"wc -l /path/file.csv\" runs a one-shot command. Detects REPL prompts (>>>, >, $), waiting for input, completion and timeout, and returns early when it can. Interactive sessions accept follow-up input; for a still-running process use read_process_output. verbose_timing=true adds the exit reason, durations and an output timeline. Prefer absolute paths.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "timeout_ms": {
+          "type": "number"
+        },
+        "shell": {
+          "type": "string"
+        },
+        "verbose_timing": {
+          "type": "boolean"
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "ui",
+            "llm"
+          ]
+        }
+      },
+      "required": [
+        "command",
+        "timeout_ms"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "read_process_output",
+    "description": "Read output from a running process, paginated like read_file. offset=0 (default) reads new output since the last read, waiting up to timeout_ms for it; positive reads from that absolute line; negative reads the last N lines. length is max lines (default fileReadLineLimit, 1000). Returns a status line with total and remaining lines, and the process state: waiting for input (use interact_with_process), finished, or timeout (may still be running).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "pid": {
+          "type": "number"
+        },
+        "timeout_ms": {
+          "type": "number"
+        },
+        "offset": {
+          "type": "number"
+        },
+        "length": {
+          "type": "number"
+        },
+        "verbose_timing": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "pid"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "interact_with_process",
+    "description": "Send input to an existing terminal process or one from start_process (shell, Python/Node/R/Julia REPL, database console) and return the new output with status. By default waits for a prompt (wait_for_prompt=true, timeout_ms default 8000), detects errors and completion, and strips common REPL prompt text. verbose_timing=true adds exit reason, durations and an output timeline.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "pid": {
+          "type": "number"
+        },
+        "input": {
+          "type": "string"
+        },
+        "timeout_ms": {
+          "type": "number"
+        },
+        "wait_for_prompt": {
+          "type": "boolean"
+        },
+        "verbose_timing": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "pid",
+        "input"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "force_terminate",
+    "description": "Force terminate a running terminal session.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "pid": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "pid"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "list_sessions",
+    "description": "List active terminal sessions with PID, Blocked and runtime. Blocked: true usually means a REPL is waiting for input; long runtime while blocked may mean it's stuck. Use to check a session is running before sending input.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "list_processes",
+    "description": "List all running processes with PID, command name, CPU and memory usage.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "kill_process",
+    "description": "Forcefully terminate a process by PID. For a PID from start_process, this ends the shell and every process the command started, like force_terminate; any other PID ends only that process. node:local sessions have a negative PID; stop them with force_terminate.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "pid": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "pid"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "get_usage_stats",
+    "description": "Get usage statistics for debugging: tool usage, success/failure rates and performance metrics.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "get_recent_tool_calls",
+    "description": "Get recent local tool call history, with arguments and outputs, in chronological order. Useful to recover context from earlier chats or debug call sequences. Excludes its own calls and track_ui_event. Kept in tool-history.jsonl (up to 1000 calls in memory, older on-disk history trimmed); outputs over 4 KiB are replaced with an omission marker.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "maxResults": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 50
+        },
+        "toolName": {
+          "type": "string"
+        },
+        "since": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  {
+    "name": "give_feedback_to_desktop_commander",
+    "description": "Open the Desktop Commander feedback form in the browser. It doesn't take or pre-fill survey answers; it attaches tool_call_count, days_using, platform and an analytics client_id.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  }
+]

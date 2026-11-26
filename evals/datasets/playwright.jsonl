@@ -1,0 +1,30 @@
+{"id": "pw-001", "request": "Go to https://example.com", "expected_tool": "browser_navigate", "expected_args": {"url": "https://example.com"}, "difficulty": "easy"}
+{"id": "pw-002", "request": "Click the Log in button", "expected_tool": "browser_click", "expected_args": {"target": "e9"}, "difficulty": "easy"}
+{"id": "pw-003", "request": "Type alice@example.com into the Email field", "expected_tool": "browser_type", "expected_args": {"target": "e5", "text": "alice@example.com"}, "difficulty": "easy"}
+{"id": "pw-004", "request": "Pick Germany in the Country dropdown", "expected_tool": "browser_select_option", "expected_args": {"target": "e8", "values": ["Germany"]}, "difficulty": "easy"}
+{"id": "pw-005", "request": "Press the Escape key", "expected_tool": "browser_press_key", "expected_args": {"key": "Escape"}, "difficulty": "easy"}
+{"id": "pw-006", "request": "Go back to the previous page", "expected_tool": "browser_navigate_back", "expected_args": {}, "difficulty": "easy"}
+{"id": "pw-007", "request": "Hover over the Forgot password? link", "expected_tool": "browser_hover", "expected_args": {"target": "e10"}, "difficulty": "easy"}
+{"id": "pw-008", "request": "Resize the browser window to 1280 by 720", "expected_tool": "browser_resize", "expected_args": {"width": 1280, "height": 720}, "difficulty": "easy"}
+{"id": "pw-009", "request": "Close the browser", "expected_tool": "browser_close", "expected_args": {}, "difficulty": "easy"}
+{"id": "pw-010", "request": "Show me the JavaScript errors in the console", "expected_tool": "browser_console_messages", "expected_args": {"level": "error"}, "difficulty": "easy"}
+{"id": "pw-011", "request": "Open https://github.com in a new tab", "expected_tool": "browser_tabs", "expected_args": {"action": "new", "url": "https://github.com"}, "difficulty": "easy"}
+{"id": "pw-012", "request": "Which tabs are open right now?", "expected_tool": "browser_tabs", "expected_args": {"action": "list"}, "difficulty": "easy"}
+{"id": "pw-013", "request": "Accept the confirmation dialog that just popped up", "expected_tool": "browser_handle_dialog", "expected_args": {"accept": true}, "difficulty": "easy"}
+{"id": "pw-014", "request": "Wait 3 seconds", "expected_tool": "browser_wait_for", "expected_args": {"time": 3}, "difficulty": "easy"}
+{"id": "pw-015", "request": "Wait until the text 'Loading...' disappears", "expected_tool": "browser_wait_for", "expected_args": {"textGone": "Loading..."}, "difficulty": "easy"}
+{"id": "pw-016", "request": "Switch the page to dark mode", "expected_tool": "browser_emulate_media", "expected_args": {"colorScheme": "dark"}, "difficulty": "easy"}
+{"id": "pw-017", "request": "Drag Item A onto the Trash bin", "expected_tool": "browser_drag", "expected_args": {"startTarget": "e20", "endTarget": "e21"}, "difficulty": "easy"}
+{"id": "pw-018", "request": "A file chooser just opened. Upload /home/user/photo.jpg", "expected_tool": "browser_file_upload", "expected_args": {"paths": ["/home/user/photo.jpg"]}, "difficulty": "easy"}
+{"id": "pw-019", "request": "List the network requests the page made", "expected_tool": "browser_network_requests", "expected_args": {}, "difficulty": "easy"}
+{"id": "pw-020", "request": "Get the page title using JavaScript", "expected_tool": "browser_evaluate", "expected_args": {}, "difficulty": "easy"}
+{"id": "pw-021", "request": "Take a screenshot of the full page", "expected_tool": "browser_take_screenshot", "expected_args": {"fullPage": true}, "difficulty": "easy"}
+{"id": "pw-022", "request": "Fill in the login form: email alice@example.com, password hunter2", "expected_tool": "browser_fill_form", "expected_args": {}, "difficulty": "confusable"}
+{"id": "pw-023", "request": "The page just changed. Get me the current list of elements and their refs", "expected_tool": "browser_snapshot", "expected_args": {}, "difficulty": "confusable"}
+{"id": "pw-024", "request": "Find where the word 'Checkout' appears on the page", "expected_tool": "browser_find", "expected_args": {}, "difficulty": "confusable"}
+{"id": "pw-025", "request": "Show me the response body of network request number 4", "expected_tool": "browser_network_request", "expected_args": {"index": 4, "part": "response-body"}, "difficulty": "confusable"}
+{"id": "pw-026", "request": "Double-click Item A", "expected_tool": "browser_click", "expected_args": {"target": "e20", "doubleClick": true}, "difficulty": "confusable"}
+{"id": "pw-027", "request": "Drop the file /home/user/report.pdf onto the file drop zone", "expected_tool": "browser_drop", "expected_args": {"target": "e30", "paths": ["/home/user/report.pdf"]}, "difficulty": "confusable"}
+{"id": "pw-028", "request": "What's the difference between Playwright and Selenium?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}
+{"id": "pw-029", "request": "Explain what a CSS selector is", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}
+{"id": "pw-030", "request": "What does HTTP status 404 mean?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}

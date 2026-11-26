@@ -1,0 +1,30 @@
+{"id": "cd-001", "request": "Open https://example.com in a new tab", "expected_tool": "new_page", "expected_args": {"url": "https://example.com"}, "difficulty": "easy"}
+{"id": "cd-002", "request": "Click the Log in button", "expected_tool": "click", "expected_args": {"pageId": 1, "uid": "1_9"}, "difficulty": "easy"}
+{"id": "cd-003", "request": "Put alice@example.com in the Email field", "expected_tool": "fill", "expected_args": {"pageId": 1, "uid": "1_5", "value": "alice@example.com"}, "difficulty": "easy"}
+{"id": "cd-004", "request": "Reload the page", "expected_tool": "navigate_page", "expected_args": {"pageId": 1, "type": "reload"}, "difficulty": "easy"}
+{"id": "cd-005", "request": "Go to https://shop.example.com/cart in the current tab", "expected_tool": "navigate_page", "expected_args": {"pageId": 1, "type": "url", "url": "https://shop.example.com/cart"}, "difficulty": "easy"}
+{"id": "cd-006", "request": "Which pages are open in the browser?", "expected_tool": "list_pages", "expected_args": {}, "difficulty": "easy"}
+{"id": "cd-007", "request": "Hover over the Forgot password? link", "expected_tool": "hover", "expected_args": {"pageId": 1, "uid": "1_10"}, "difficulty": "easy"}
+{"id": "cd-008", "request": "Drag Item A onto the Trash bin", "expected_tool": "drag", "expected_args": {"pageId": 1, "from_uid": "1_20", "to_uid": "1_21"}, "difficulty": "easy"}
+{"id": "cd-009", "request": "Show me the console messages", "expected_tool": "list_console_messages", "expected_args": {"pageId": 1}, "difficulty": "easy"}
+{"id": "cd-010", "request": "Show only the error messages from the console", "expected_tool": "list_console_messages", "expected_args": {"pageId": 1, "types": ["error"]}, "difficulty": "easy"}
+{"id": "cd-011", "request": "List the network requests the page made", "expected_tool": "list_network_requests", "expected_args": {"pageId": 1}, "difficulty": "easy"}
+{"id": "cd-012", "request": "Show me the headers of network request 12", "expected_tool": "get_network_request", "expected_args": {"pageId": 1, "reqid": 12}, "difficulty": "easy"}
+{"id": "cd-013", "request": "Take a screenshot of the page", "expected_tool": "take_screenshot", "expected_args": {"pageId": 1}, "difficulty": "easy"}
+{"id": "cd-014", "request": "Run an accessibility audit on this page", "expected_tool": "lighthouse_audit", "expected_args": {"pageId": 1}, "difficulty": "easy"}
+{"id": "cd-015", "request": "Record a performance trace of the page load", "expected_tool": "performance_start_trace", "expected_args": {"pageId": 1}, "difficulty": "easy"}
+{"id": "cd-016", "request": "Simulate a slow 3G network", "expected_tool": "emulate", "expected_args": {"pageId": 1, "networkConditions": "Slow 3G"}, "difficulty": "easy"}
+{"id": "cd-017", "request": "Resize the page to 375 by 812", "expected_tool": "resize_page", "expected_args": {"pageId": 1, "width": 375, "height": 812}, "difficulty": "easy"}
+{"id": "cd-018", "request": "Dismiss the dialog that just opened", "expected_tool": "handle_dialog", "expected_args": {"pageId": 1, "action": "dismiss"}, "difficulty": "easy"}
+{"id": "cd-019", "request": "Upload /home/user/avatar.png with the Upload avatar button", "expected_tool": "upload_file", "expected_args": {"pageId": 1, "uid": "1_30", "filePaths": ["/home/user/avatar.png"]}, "difficulty": "easy"}
+{"id": "cd-020", "request": "Start recording a video of the page", "expected_tool": "screencast_start", "expected_args": {"pageId": 1}, "difficulty": "easy"}
+{"id": "cd-021", "request": "Fill in the login form: email alice@example.com, password hunter2, and tick Remember me", "expected_tool": "fill_form", "expected_args": {"pageId": 1}, "difficulty": "confusable"}
+{"id": "cd-022", "request": "Find out why this page is slow to load", "expected_tool": "performance_start_trace", "expected_args": {"pageId": 1}, "difficulty": "confusable"}
+{"id": "cd-023", "request": "Which CSS rules make the Log in button blue?", "expected_tool": "get_css_styles", "expected_args": {"pageId": 1, "uid": "1_9"}, "difficulty": "confusable"}
+{"id": "cd-024", "request": "Save a heap snapshot of this page to /tmp/page.heapsnapshot so I can look for memory leaks", "expected_tool": "take_heapsnapshot", "expected_args": {"pageId": 1, "filePath": "/tmp/page.heapsnapshot"}, "difficulty": "easy"}
+{"id": "cd-025", "request": "The page just changed. Get me the current elements and their uids", "expected_tool": "take_snapshot", "expected_args": {"pageId": 1}, "difficulty": "confusable"}
+{"id": "cd-026", "request": "Press Ctrl+A to select everything", "expected_tool": "press_key", "expected_args": {"pageId": 1, "key": "Control+A"}, "difficulty": "confusable"}
+{"id": "cd-027", "request": "What is the value of document.title on this page?", "expected_tool": "evaluate_script", "expected_args": {"pageId": 1}, "difficulty": "confusable"}
+{"id": "cd-028", "request": "What's the difference between LCP and CLS?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}
+{"id": "cd-029", "request": "How do I open Chrome DevTools by hand?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}
+{"id": "cd-030", "request": "What is the DOM?", "expected_tool": null, "expected_args": {}, "difficulty": "no_tool"}

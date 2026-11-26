@@ -1,0 +1,12 @@
+{
+  "name": "slimproof",
+  "owner": { "name": "Rounak Sonavane" },
+  "description": "Audit and slim MCP tool definitions, with proof they still work.",
+  "plugins": [
+    {
+      "name": "slimproof",
+      "source": "./plugin",
+      "description": "Audit MCP tool definitions for token cost and slim bloated descriptions, with proof they still work."
+    }
+  ]
+}
