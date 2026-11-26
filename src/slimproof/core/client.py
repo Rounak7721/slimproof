@@ -3,6 +3,7 @@
 import re
 import tempfile
 from dataclasses import dataclass, field
+from typing import TextIO, cast
 from urllib.parse import urlsplit
 
 import httpx2
@@ -122,7 +123,8 @@ async def _stdio_tools(server: StdioServerParameters) -> list[types.Tool]:
     """Tools of a stdio server. Its stderr log stays hidden unless it fails."""
     with tempfile.TemporaryFile("w+", encoding="utf-8", errors="replace") as log:
         try:
-            transport = stdio_client(server, errlog=log)
+            # On Windows TemporaryFile is a wrapper, not a TextIO; it forwards fileno() etc.
+            transport = stdio_client(server, errlog=cast(TextIO, log))
             return await _all_tools(Client(transport, read_timeout_seconds=TIMEOUT))
         except Exception as e:
             log.seek(0)
