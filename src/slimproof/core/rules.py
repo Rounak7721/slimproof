@@ -151,6 +151,13 @@ def sp006(tool: types.Tool, limit: int = 1000) -> list[str]:
     return [f"description is {n} chars (limit {limit})"] if n > limit else []
 
 
+def _clip(text: str, limit: int = 60) -> str:
+    """`text` cut to at most `limit` chars at a word boundary, with `…` if cut."""
+    if len(text) <= limit:
+        return text
+    return text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:") + "…"
+
+
 def sp007(tools: list[types.Tool]) -> list[tuple[str, str]]:
     """The same sentence appears in more than one tool's description."""
     first_seen: dict[str, str] = {}  # sentence -> first tool that used it
@@ -159,7 +166,7 @@ def sp007(tools: list[types.Tool]) -> list[tuple[str, str]]:
         for s in _sentences(tool.description or ""):
             if first_seen.get(s, tool.name) != tool.name:
                 found.append(
-                    (tool.name, f"repeats a sentence from '{first_seen[s]}': \"{s[:60]}\"")
+                    (tool.name, f"repeats a sentence from '{first_seen[s]}': \"{_clip(s)}\"")
                 )
             first_seen.setdefault(s, tool.name)
     return found

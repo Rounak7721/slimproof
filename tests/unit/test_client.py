@@ -1,9 +1,21 @@
+import sys
+from pathlib import Path
+
 import httpx2
 import pytest
+from mcp import StdioServerParameters
 from mcp.server.mcpserver import MCPServer
 from starlette.types import Receive, Scope, Send
 
-from slimproof.core.client import HttpServer, command_name, list_tools, url_name
+from slimproof.core.client import (
+    HttpServer,
+    ServerFailed,
+    command_name,
+    list_tools,
+    url_name,
+)
+
+FIXTURE = Path(__file__).parent.parent / "fixtures" / "bloated_server.py"
 
 
 @pytest.mark.anyio
@@ -71,3 +83,31 @@ def test_url_name_drops_secrets() -> None:
     assert url_name("https://user:pw@api.example.com:8443/mcp?api_key=secret") == (
         "api.example.com:8443/mcp"
     )
+
+
+@pytest.mark.anyio
+async def test_stdio_server_log_stays_hidden(capfd: pytest.CaptureFixture[str]) -> None:
+    noisy = (
+        "import runpy, sys; print('server log line', file=sys.stderr); "
+        f"runpy.run_path({str(FIXTURE)!r}, run_name='__main__')"
+    )
+    server = StdioServerParameters(command=sys.executable, args=["-c", noisy])
+
+    tools = await list_tools(server)
+
+    assert {t.name for t in tools} == {"search", "ping"}
+    assert "server log line" not in capfd.readouterr().err
+
+
+@pytest.mark.anyio
+async def test_failed_stdio_server_shows_its_last_log_lines() -> None:
+    crash = (
+        "import sys; print('starting', file=sys.stderr); "
+        "print('Error: API_KEY missing', file=sys.stderr); sys.exit(1)"
+    )
+    server = StdioServerParameters(command=sys.executable, args=["-c", crash])
+
+    with pytest.raises(ServerFailed) as failed:
+        await list_tools(server)
+
+    assert str(failed.value).endswith("  | starting\n  | Error: API_KEY missing")

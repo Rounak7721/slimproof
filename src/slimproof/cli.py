@@ -245,7 +245,10 @@ def _print_result(
             typer.echo(f"{name}: skipped ({msg})", err=True)
 
         for name, msg in result.errors.items():
-            typer.echo(f"{name}: failed ({msg})", err=True)
+            first, _, server_log = msg.partition("\n")  # the server's last log lines, if any
+            typer.echo(f"{name}: failed ({first})", err=True)
+            if server_log:
+                typer.echo(server_log, err=True)
 
     if result.errors:
         raise typer.Exit(2)
