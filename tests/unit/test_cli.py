@@ -1,5 +1,6 @@
 import json
 import sys
+from importlib.metadata import version
 from pathlib import Path
 
 import pytest
@@ -177,3 +178,10 @@ def test_apply_and_revert_edit_the_config(tmp_path: Path, monkeypatch: pytest.Mo
 
     assert CliRunner().invoke(app, ["revert", *options]).exit_code == 0
     assert json.loads(config.read_text())["mcpServers"]["fs"] == {"command": "npx", "args": ["pkg"]}
+
+
+def test_version_prints_package_version() -> None:
+    result = CliRunner().invoke(app, ["--version"])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == f"slimproof {version('slimproof')}"

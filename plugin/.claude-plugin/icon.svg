@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#050826"/>
+
+  <!-- Curly braces -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <path id="brace" d="M168 108 H150 Q118 108 118 140 V218 Q118 256 86 256 Q118 256 118 294 V372 Q118 404 150 404 H168"/>
+    <use href="#brace" transform="translate(512 0) scale(-1 1)"/>
+  </g>
+
+  <!-- Original (verbose) lines -->
+  <g stroke="#B4B9D6" stroke-width="20" stroke-linecap="round">
+    <line x1="170" y1="152" x2="342" y2="152"/>
+    <line x1="170" y1="192" x2="342" y2="192"/>
+    <line x1="170" y1="232" x2="342" y2="232"/>
+  </g>
+
+  <!-- Double chevron (compress) -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="242,262 256,274 270,262"/>
+    <polyline points="242,284 256,296 270,284"/>
+  </g>
+
+  <!-- Slimmed (green) lines -->
+  <g stroke="#7CEB9A" stroke-width="18" stroke-linecap="round">
+    <line x1="170" y1="324" x2="300" y2="324"/>
+    <line x1="170" y1="360" x2="300" y2="360"/>
+  </g>
+
+  <!-- Check badge -->
+  <circle cx="336" cy="344" r="40" fill="#7CEB9A" stroke="#050826" stroke-width="8"/>
+  <polyline points="318,345 331,358 355,332" fill="none" stroke="#050826"
+            stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

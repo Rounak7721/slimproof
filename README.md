@@ -1,8 +1,17 @@
-# slimproof
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Rounak7721/slimproof/main/plugin/.claude-plugin/icon.png" width="128" alt="slimproof icon">
+</p>
 
-Audit and slim MCP tool definitions, with proof they still work.
+<h1 align="center">slimproof</h1>
 
-🚧 Under active development. The first release (v0.1.0) is coming soon.
+<p align="center">Audit and slim MCP tool definitions, with proof they still work.</p>
+
+<p align="center">
+  <a href="https://pypi.org/project/slimproof/"><img src="https://img.shields.io/pypi/v/slimproof" alt="PyPI version"></a>
+  <a href="https://pypi.org/project/slimproof/"><img src="https://img.shields.io/pypi/pyversions/slimproof" alt="Python versions"></a>
+  <a href="https://github.com/Rounak7721/slimproof/actions/workflows/ci.yml"><img src="https://github.com/Rounak7721/slimproof/actions/workflows/ci.yml/badge.svg?branch=develop" alt="CI"></a>
+  <a href="https://github.com/Rounak7721/slimproof/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Rounak7721/slimproof" alt="License: MIT"></a>
+</p>
 
 Every MCP server you add sends its tool definitions to the model in each session. Long descriptions use context and cost tokens before you type anything. slimproof finds the heaviest tools, helps Claude rewrite their descriptions, and checks that only the wording changed. Then Claude Code can use the slim versions.
 

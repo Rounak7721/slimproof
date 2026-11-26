@@ -1,0 +1,64 @@
+name: Release
+on:
+    push:
+        tags: ["v*.*.*"]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+            - uses: astral-sh/setup-uv@v10.4.0
+            # Stop before publishing if the tag, pyproject, plugin.json and the .mcp.json pin disagree.
+            - name: Check versions match the tag
+              run: |
+                  tag="${GITHUB_REF_NAME#v}"
+                  py=$(uv version --short)
+                  plugin=$(jq -r .version plugin/.claude-plugin/plugin.json)
+                  pin=$(jq -r '.mcpServers.slimproof.args[0]' plugin/.mcp.json)
+                  echo "tag=$tag pyproject=$py plugin.json=$plugin pin=$pin"
+                  [ "$py" = "$tag" ] && [ "$plugin" = "$tag" ] && [ "$pin" = "slimproof==$tag" ]
+            - name: Check the changelog has this version
+              run: grep -q "^## \[${GITHUB_REF_NAME#v}\]" CHANGELOG.md
+            - run: uv build
+            - run: uvx --from dist/*.whl slimproof --version
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: dist
+                  path: dist/
+
+    pypi:
+        needs: build
+        runs-on: ubuntu-latest
+        environment: pypi
+        permissions:
+            id-token: write # trusted publishing: PyPI trusts this workflow, no API token
+        steps:
+            - uses: actions/download-artifact@v8
+              with:
+                  name: dist
+                  path: dist/
+            - uses: astral-sh/setup-uv@v10.4.0
+            - run: uv publish
+
+    github-release:
+        needs: pypi
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - uses: actions/checkout@v5
+            - uses: actions/download-artifact@v8
+              with:
+                  name: dist
+                  path: dist/
+            - name: Create the GitHub Release with the changelog notes
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  awk -v v="${GITHUB_REF_NAME#v}" '
+                      $0 ~ "^## \\[" v "\\]" {on=1; next}
+                      on && /^## \[/ {exit}
+                      on && !/^\[.*\]: / {print}
+                  ' CHANGELOG.md > notes.md
+                  gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --notes-file notes.md

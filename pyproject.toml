@@ -1,7 +1,7 @@
 [project]
 name = "slimproof"
-version = "0.0.1"
-description = "Audit and slim MCP tool definitions, with proof they still work. Under active development."
+version = "0.1.0"
+description = "Audit and slim MCP tool definitions, with proof they still work."
 readme = "README.md"
 license = "MIT"
 authors = [{ name = "Rounak Sonavane" }]
@@ -13,10 +13,22 @@ dependencies = [
     "rich>=15.0.0",
     "typer>=0.27.3",
 ]
-classifiers = ["Development Status :: 1 - Planning"]
+keywords = ["mcp", "claude", "claude-code", "tokens", "context-window", "llm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 
 [project.urls]
 Repository = "https://github.com/Rounak7721/slimproof"
+Issues = "https://github.com/Rounak7721/slimproof/issues"
+Changelog = "https://github.com/Rounak7721/slimproof/blob/main/CHANGELOG.md"
 
 [project.scripts]
 slimproof = "slimproof.cli:app"

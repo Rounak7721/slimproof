@@ -6,6 +6,7 @@ import shlex
 from collections.abc import Callable
 from dataclasses import asdict
 from functools import partial
+from importlib.metadata import version
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -67,8 +68,19 @@ def _check_exact(exact: bool) -> None:
         raise typer.Exit(2)
 
 
+def _print_version(value: bool) -> None:
+    if value:
+        typer.echo(f"slimproof {version('slimproof')}")
+        raise typer.Exit()
+
+
 @app.callback()
-def main() -> None:
+def main(
+    _version: Annotated[
+        bool,
+        typer.Option("--version", callback=_print_version, is_eager=True, help="Show the version."),
+    ] = False,
+) -> None:
     """Audit MCP tool definitions for token bloat."""
 
 
